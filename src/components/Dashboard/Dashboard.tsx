@@ -30,7 +30,7 @@ export function Dashboard() {
     getDashboardStats().then((data:DashboardStats | null) => {
       if (data) setStats(data);
     });
-  }, [getDashboardStats]);
+  }, []);
 
   const proximosEventos = eventos
     .filter((e) => new Date(e.fecha_inicio) > new Date())

@@ -51,7 +51,7 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
     getNotificacionesNoLeidas().then((data) => {
       if (data) setNotificacionesNoLeidas(data);
     });
-  }, [getNotificacionesNoLeidas]);
+  }, []);
 
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showClassesModal, setShowClassesModal] = useState(false);
