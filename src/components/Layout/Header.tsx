@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Bell,
   User,
@@ -13,6 +13,7 @@ import {
 import { useGymData } from "../../hooks/useGymData";
 import { format } from "date-fns";
 import { useToast } from "../../contexts/ToastContext";
+import { Notificacion } from "../../types"; 
 
 interface ScheduleData {
   title: string;
@@ -42,7 +43,16 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
   const { getNotificacionesNoLeidas, agregarEvento, agregarNotificacion } =
     useGymData();
   const { showToast } = useToast();
-  const notificacionesNoLeidas = getNotificacionesNoLeidas();
+
+  // 📌 Estado para las notificaciones no leídas
+  const [notificacionesNoLeidas, setNotificacionesNoLeidas] = useState<Notificacion[]>([]);
+
+  useEffect(() => {
+    getNotificacionesNoLeidas().then((data) => {
+      if (data) setNotificacionesNoLeidas(data);
+    });
+  }, [getNotificacionesNoLeidas]);
+
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showClassesModal, setShowClassesModal] = useState(false);
   const [editingClass, setEditingClass] = useState<ClassData | null>(null);
@@ -55,7 +65,7 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
     attendees: [],
   });
 
-  // Mock data for classes - in a real app, this would come from your data store
+  // Mock data de clases
   const [classes, setClasses] = useState<ClassData[]>([
     {
       id: "1",
@@ -94,7 +104,7 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
     }
   };
 
-  const handleScheduleSubmit = (e: React.FormEvent) => {
+  const handleScheduleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // Create a new event
     const newEvent = {
@@ -107,7 +117,7 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
     };
 
     // Add the event and get the created event with ID
-    const createdEvent = agregarEvento(newEvent);
+    const createdEvent = await agregarEvento(newEvent);
 
     const eventType = scheduleForm.type === "class" ? "clase" : "evento";
     const message = `¡${eventType.charAt(0).toUpperCase() + eventType.slice(1)} programado con éxito!`;

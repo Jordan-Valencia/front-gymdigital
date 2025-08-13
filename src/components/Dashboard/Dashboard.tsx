@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Users,
   DollarSign,
@@ -13,13 +13,30 @@ import { useGymData } from "../../hooks/useGymData";
 export function Dashboard() {
   const { getDashboardStats, usuarios, eventos, membresias, planes } =
     useGymData();
-  const stats = getDashboardStats();
+
+  // Estado para las estadísticas del dashboard
+  const [stats, setStats] = useState({
+    miembrosActivos: 0,
+    ingresosMes: 0,
+    ventasHoy: 0,
+    entrenadores: 0,
+    eventosProximos: 0,
+    inventarioBajo: 0,
+  });
+
+  // Cargar estadísticas al montar el componente
+  useEffect(() => {
+    getDashboardStats().then((data) => {
+      if (data) setStats(data);
+    });
+  }, []);
 
   const proximosEventos = eventos
     .filter((e) => new Date(e.fecha_inicio) > new Date())
     .sort(
       (a, b) =>
-        new Date(a.fecha_inicio).getTime() - new Date(b.fecha_inicio).getTime(),
+        new Date(a.fecha_inicio).getTime() -
+        new Date(b.fecha_inicio).getTime()
     )
     .slice(0, 5);
 
@@ -27,11 +44,10 @@ export function Dashboard() {
     .sort(
       (a, b) =>
         new Date(b.fecha_registro).getTime() -
-        new Date(a.fecha_registro).getTime(),
+        new Date(a.fecha_registro).getTime()
     )
     .slice(0, 5);
 
-  // Obtener membresías que vencen pronto
   const membresiasPorVencer = membresias
     .filter((m) => {
       const fechaVencimiento = new Date(m.fecha_fin);
@@ -46,6 +62,7 @@ export function Dashboard() {
       plan: planes.find((p) => p.id === m.plan_id),
     }))
     .slice(0, 3);
+
   return (
     <div className="bg-dot-pattern bg-fixed">
       <div className="bg-gradient-to-br from-indigo-50/90 via-white/80 to-sky-50/90 backdrop-blur-[2px]">
@@ -109,7 +126,7 @@ export function Dashboard() {
                   const diasRestantes = Math.ceil(
                     (new Date(membresia.fecha_fin).getTime() -
                       new Date().getTime()) /
-                      (1000 * 60 * 60 * 24),
+                      (1000 * 60 * 60 * 24)
                   );
                   return (
                     <div
@@ -154,15 +171,14 @@ export function Dashboard() {
                           {evento.titulo}
                         </p>
                         <p className="text-xs text-gray-600">
-                          {new Date(evento.fecha_inicio).toLocaleDateString(
-                            "es-ES",
-                            {
-                              day: "numeric",
-                              month: "short",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            },
-                          )}
+                          {new Date(
+                            evento.fecha_inicio
+                          ).toLocaleDateString("es-ES", {
+                            day: "numeric",
+                            month: "short",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                         </p>
                       </div>
                       <span
@@ -170,10 +186,10 @@ export function Dashboard() {
                           evento.color === "blue"
                             ? "bg-sky-100 text-sky-800"
                             : evento.color === "green"
-                              ? "bg-emerald-100 text-emerald-800"
-                              : evento.color === "orange"
-                                ? "bg-amber-100 text-amber-800"
-                                : "bg-gray-100 text-gray-800"
+                            ? "bg-emerald-100 text-emerald-800"
+                            : evento.color === "orange"
+                            ? "bg-amber-100 text-amber-800"
+                            : "bg-gray-100 text-gray-800"
                         }`}
                       >
                         {evento.tipo}
@@ -262,7 +278,7 @@ export function Dashboard() {
                   <span className="font-semibold text-indigo-600">
                     {
                       membresias.filter(
-                        (m) => new Date(m.fecha_fin) > new Date(),
+                        (m) => new Date(m.fecha_fin) > new Date()
                       ).length
                     }
                   </span>
@@ -277,7 +293,7 @@ export function Dashboard() {
                       ? (
                           membresias.reduce(
                             (sum, m) => sum + m.precio_pagado,
-                            0,
+                            0
                           ) / membresias.length
                         ).toFixed(2)
                       : "0.00"}
@@ -296,6 +312,7 @@ export function Dashboard() {
               </div>
             </div>
           </div>
+          
         </div>
       </div>
     </div>
