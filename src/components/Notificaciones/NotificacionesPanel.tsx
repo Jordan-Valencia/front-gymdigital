@@ -1,4 +1,3 @@
-import React from "react";
 import {
   X,
   Bell,
@@ -7,7 +6,6 @@ import {
   AlertTriangle,
   Users,
   Calendar,
-  Package,
 } from "lucide-react";
 import { useGymData } from "../../hooks/useGymData";
 

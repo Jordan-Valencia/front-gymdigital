@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Plus,
   Search,
@@ -30,7 +30,7 @@ export function MembresiasList() {
     setSelectedMembresia(null);
     setIsFormOpen(true);
   };
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleEditMembresia = (membresia: any) => {
     setSelectedMembresia(membresia);
     setIsFormOpen(true);

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Sidebar } from "./components/Layout/Sidebar";
 import { Header } from "./components/Layout/Header";
 import { Dashboard } from "./components/Dashboard/Dashboard";
@@ -12,18 +12,8 @@ import { GaleriaPage } from "./components/Galeria/GaleriaPage";
 import { NotificacionesPanel } from "./components/Notificaciones/NotificacionesPanel";
 import { Usuario } from "./types";
 import { ToastProvider } from "./contexts/ToastContext";
-import { LoadingScreen } from "./components/Layout/LoadingScreen";
 
 function App() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [showContent, setShowContent] = useState(false);
-
-  useEffect(() => {
-    if (!isLoading) {
-      const timer = setTimeout(() => setShowContent(true), 500);
-      return () => clearTimeout(timer);
-    }
-  }, [isLoading]);
   const [activeSection, setActiveSection] = useState("dashboard");
   const [showUsuarioForm, setShowUsuarioForm] = useState(false);
   const [editingUsuario, setEditingUsuario] = useState<Usuario | undefined>();
@@ -110,9 +100,6 @@ function App() {
 
   return (
     <>
-      {!showContent && (
-        <LoadingScreen onLoadingComplete={() => setIsLoading(false)} />
-      )}
       <ToastProvider>
         <div className="min-h-screen bg-gray-50 flex">
           <Sidebar

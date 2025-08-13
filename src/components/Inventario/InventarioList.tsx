@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Plus,
   Search,
@@ -33,6 +33,7 @@ export function InventarioList() {
     "todos" | "implemento" | "producto"
   >("todos");
   const [isFormOpen, setIsFormOpen] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [itemTipo, setItemTipo] = useState<"implemento" | "producto">(
     "implemento",
@@ -43,7 +44,7 @@ export function InventarioList() {
     setSelectedItem(null);
     setIsFormOpen(true);
   };
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleEditItem = (item: any) => {
     setSelectedItem(item);
     setItemTipo(item.tipo);
@@ -62,7 +63,7 @@ export function InventarioList() {
     }
     setIsFormOpen(false);
   };
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleDeleteItem = (item: any) => {
     if (window.confirm(`¿Estás seguro de eliminar ${item.nombre}?`)) {
       eliminarItemInventario(item.id);
@@ -150,6 +151,7 @@ export function InventarioList() {
           </div>
           <select
             value={filtroTipo}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             onChange={(e) => setFiltroTipo(e.target.value as any)}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >

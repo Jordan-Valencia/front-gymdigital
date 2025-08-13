@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { StatsCard } from "./StatsCard";
 import { useGymData } from "../../hooks/useGymData";
+import { DashboardStats } from "../../types";
 
 export function Dashboard() {
   const { getDashboardStats, usuarios, eventos, membresias, planes } =
@@ -26,10 +27,10 @@ export function Dashboard() {
 
   // Cargar estadísticas al montar el componente
   useEffect(() => {
-    getDashboardStats().then((data) => {
+    getDashboardStats().then((data:DashboardStats | null) => {
       if (data) setStats(data);
     });
-  }, []);
+  }, [getDashboardStats]);
 
   const proximosEventos = eventos
     .filter((e) => new Date(e.fecha_inicio) > new Date())

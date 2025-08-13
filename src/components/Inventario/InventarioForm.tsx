@@ -3,6 +3,15 @@ import { X, Save, Plus, Minus, AlertTriangle } from "lucide-react";
 import { useGymData } from "../../hooks/useGymData";
 import { ItemInventario, CategoriaInventario } from "../../types";
 
+// Tipo base que espera onSave
+type InventarioBase = Omit<
+  ItemInventario,
+  "id" | "fecha_registro" | "categoria" | "tipo"
+> & { categoria_id: string };
+
+// Tipo extendido con "tipo"
+type InventarioNuevo = InventarioBase & { tipo: "implemento" | "producto" };
+
 // Extend the base ItemInventario type for the form
 interface FormData {
   nombre: string;
@@ -89,29 +98,29 @@ export function InventarioForm({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
 
-    // Prepare data for submission
-    const dataToSubmit: Omit<
-      ItemInventario,
-      "id" | "fecha_registro" | "categoria" | "tipo"
-    > & { categoria_id: string } = {
-      nombre: formData.nombre,
-      descripcion: formData.descripcion || undefined,
-      categoria_id: formData.categoria_id,
-      cantidad: Number(formData.cantidad),
-      stock_minimo: Number(formData.stock_minimo),
-      precio_unitario: formData.precio_unitario || undefined,
-    };
+const handleSubmit = (e: React.FormEvent) => {
+  e.preventDefault();
 
-    // Add the type if it's a new item
-    if (!item) {
-      (dataToSubmit as any).tipo = tipo;
-    }
-
-    onSave(dataToSubmit);
+  let dataToSubmit: InventarioBase | InventarioNuevo = {
+    nombre: formData.nombre,
+    descripcion: formData.descripcion || undefined,
+    categoria_id: formData.categoria_id,
+    cantidad: Number(formData.cantidad),
+    stock_minimo: Number(formData.stock_minimo),
+    precio_unitario: formData.precio_unitario || undefined,
   };
+
+  // Si es nuevo, añadimos tipo
+  if (!item) {
+    dataToSubmit = {
+      ...dataToSubmit,
+      tipo,
+    };
+  }
+
+  onSave(dataToSubmit);
+};
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[900] ml-20">
