@@ -28,56 +28,56 @@ export function NotificacionesPanel({
     switch (tipo) {
       case "stock_bajo":
         return (
-          <div className="bg-orange-100 p-2 rounded-lg">
+          <div className="bg-orange-100 dark:bg-orange-900/50 p-2 rounded-lg">
             <AlertTriangle
-              className={`text-orange-600 ${iconClasses}`}
+              className={`text-orange-600 dark:text-orange-400 ${iconClasses}`}
               size={18}
             />
           </div>
         );
       case "membresia_vencimiento":
         return (
-          <div className="bg-red-100 p-2 rounded-lg">
-            <Clock className={`text-red-600 ${iconClasses}`} size={18} />
+          <div className="bg-red-100 dark:bg-red-900/50 p-2 rounded-lg">
+            <Clock className={`text-red-600 dark:text-red-400 ${iconClasses}`} size={18} />
           </div>
         );
       case "nuevo_miembro":
       case "nueva_membresia":
         return (
-          <div className="bg-emerald-100 p-2 rounded-lg">
-            <Users className={`text-emerald-600 ${iconClasses}`} size={18} />
+          <div className="bg-emerald-100 dark:bg-emerald-900/50 p-2 rounded-lg">
+            <Users className={`text-emerald-600 dark:text-emerald-400 ${iconClasses}`} size={18} />
           </div>
         );
       case "evento_proximo":
         return (
-          <div className="bg-blue-100 p-2 rounded-lg">
-            <Calendar className={`text-blue-600 ${iconClasses}`} size={18} />
+          <div className="bg-blue-100 dark:bg-blue-900/50 p-2 rounded-lg">
+            <Calendar className={`text-blue-600 dark:text-blue-400 ${iconClasses}`} size={18} />
           </div>
         );
       default:
         return (
-          <div className="bg-gray-100 p-2 rounded-lg">
-            <Bell className={`text-gray-600 ${iconClasses}`} size={18} />
+          <div className="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg">
+            <Bell className={`text-gray-600 dark:text-gray-400 ${iconClasses}`} size={18} />
           </div>
         );
     }
   };
 
   const getColorFondo = (tipo: string, leida: boolean) => {
-    if (leida) return "bg-gray-50";
+    if (leida) return "bg-gray-50 dark:bg-gray-800/50";
 
     switch (tipo) {
       case "stock_bajo":
-        return "bg-orange-50 border-l-4 border-orange-400";
+        return "bg-orange-50 border-l-4 border-orange-400 dark:bg-orange-900/20 dark:border-orange-600";
       case "membresia_vencimiento":
-        return "bg-red-50 border-l-4 border-red-400";
+        return "bg-red-50 border-l-4 border-red-400 dark:bg-red-900/20 dark:border-red-600";
       case "nuevo_miembro":
       case "nueva_membresia":
-        return "bg-green-50 border-l-4 border-green-400";
+        return "bg-green-50 border-l-4 border-green-400 dark:bg-green-900/20 dark:border-green-600";
       case "evento_proximo":
-        return "bg-blue-50 border-l-4 border-blue-400";
+        return "bg-blue-50 border-l-4 border-blue-400 dark:bg-blue-900/20 dark:border-blue-600";
       default:
-        return "bg-white border-l-4 border-gray-400";
+        return "bg-white border-l-4 border-gray-400 dark:bg-gray-700/50 dark:border-gray-500";
     }
   };
 
@@ -114,25 +114,25 @@ export function NotificacionesPanel({
         style={{ backdropFilter: "blur(8px)" }}
         onClick={onClose}
       />
-      <div className="relative w-[420px] h-screen bg-white shadow-2xl animate-slideInRight z-[1501]">
-        <div className="p-5 border-b bg-white sticky top-0 z-10">
+      <div className="relative w-[420px] h-screen bg-white dark:bg-gray-800 shadow-2xl animate-slideInRight z-[1501]">
+        <div className="p-5 border-b dark:border-gray-700 bg-white dark:bg-gray-800 sticky top-0 z-10">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <div className="bg-indigo-100 p-2.5 rounded-xl">
-                <Bell className="text-indigo-600" size={20} />
+              <div className="bg-indigo-100 dark:bg-indigo-900/50 p-2.5 rounded-xl">
+                <Bell className="text-indigo-600 dark:text-indigo-400" size={20} />
               </div>
-              <h2 className="text-lg font-semibold text-gray-900">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 Notificaciones
               </h2>
               {noLeidas > 0 && (
-                <span className="bg-indigo-500 text-white text-xs px-2.5 py-1 rounded-full font-medium">
+                <span className="bg-indigo-500 dark:bg-indigo-600 text-white text-xs px-2.5 py-1 rounded-full font-medium">
                   {noLeidas}
                 </span>
               )}
             </div>
             <button
               onClick={onClose}
-              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 
+              className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700
                 rounded-lg transition-colors"
             >
               <X size={18} />
@@ -142,7 +142,7 @@ export function NotificacionesPanel({
           {noLeidas > 0 && (
             <button
               onClick={marcarTodasLeidas}
-              className="flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-700"
+              className="flex items-center gap-2 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
             >
               <CheckCheck size={14} />
               <span>Marcar todas como leídas</span>
@@ -152,14 +152,15 @@ export function NotificacionesPanel({
 
         <div className="overflow-y-auto h-[calc(100vh-90px)] pb-20">
           {notificacionesOrdenadas.length > 0 ? (
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-gray-100 dark:divide-gray-700/50">
               {notificacionesOrdenadas.map((notificacion) => (
                 <div
                   key={notificacion.id}
                   className={`group p-4 hover:bg-gradient-to-r hover:from-gray-50/80 hover:via-white 
-                    hover:to-gray-50/20 transition-all duration-300 cursor-pointer relative overflow-hidden
+                    hover:to-gray-50/20 dark:hover:from-gray-700/80 dark:hover:via-gray-800/50 dark:hover:to-gray-700/20 
+                    transition-all duration-300 cursor-pointer relative overflow-hidden
                     hover:shadow-[inset_0_0_0_1px_rgba(0,0,0,0.05)] hover:-translate-x-1
-                    ${notificacion.leida ? "bg-transparent" : getColorFondo(notificacion.tipo, notificacion.leida)}`}
+                    ${notificacion.leida ? "bg-transparent" : getColorFondo(notificacion.tipo, notificacion.leida)}`} 
                   onClick={() =>
                     !notificacion.leida &&
                     marcarNotificacionLeida(notificacion.id)
@@ -178,22 +179,21 @@ export function NotificacionesPanel({
                     >
                       <p
                         className={`text-sm leading-relaxed mb-1 transition-colors duration-300
-                        group-hover:text-gray-900 ${
-                          notificacion.leida
-                            ? "text-gray-600"
-                            : "text-gray-900 font-medium"
-                        }`}
+                        group-hover:text-gray-900 dark:group-hover:text-gray-100 ${notificacion.leida
+                            ? "text-gray-600 dark:text-gray-400"
+                            : "text-gray-900 dark:text-gray-100 font-medium"
+                        }`} 
                       >
                         {notificacion.mensaje}
                       </p>
-                      <p className="text-xs text-gray-500 flex items-center gap-2">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
                         <div
-                          className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-full
-                          group-hover:bg-gray-200 transition-colors duration-300"
+                          className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full
+                          group-hover:bg-gray-200 dark:group-hover:bg-gray-600 transition-colors duration-300"
                         >
                           <Clock
                             size={12}
-                            className="group-hover:text-indigo-500 transition-colors duration-300"
+                            className="group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors duration-300"
                           />
                           {formatearFecha(notificacion.fecha_creacion)}
                         </div>
@@ -215,14 +215,14 @@ export function NotificacionesPanel({
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center h-96 text-gray-500">
+            <div className="flex flex-col items-center justify-center h-96 text-gray-500 dark:text-gray-400">
               <div className="bg-gray-100/80 p-4 rounded-full mb-4">
                 <Bell size={32} className="text-gray-400" />
               </div>
-              <p className="text-lg font-medium text-gray-600">
+              <p className="text-lg font-medium text-gray-600 dark:text-gray-100">
                 No hay notificaciones
               </p>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 Las notificaciones aparecerán aquí
               </p>
             </div>

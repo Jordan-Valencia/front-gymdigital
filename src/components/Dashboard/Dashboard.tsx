@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Users,
   DollarSign,
@@ -66,7 +66,7 @@ export function Dashboard() {
 
   return (
     <div className="bg-dot-pattern bg-fixed">
-      <div className="bg-gradient-to-br from-indigo-50/90 via-white/80 to-sky-50/90 backdrop-blur-[2px]">
+      <div className="bg-gradient-to-br from-indigo-50/90 via-white/80 to-sky-50/90 dark:from-gray-900/90 dark:via-gray-800/80 dark:to-gray-900/90 backdrop-blur-[2px]">
         <div className="space-y-6 p-4 animate-fadeIn ml-20">
           {/* Estadísticas principales */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 animate-slideUp">
@@ -112,13 +112,13 @@ export function Dashboard() {
 
           {/* Alertas importantes */}
           {membresiasPorVencer.length > 0 && (
-            <div className="backdrop-blur-xl bg-gradient-to-r from-amber-50/90 to-orange-50/90 border-l-4 border-amber-400 rounded-xl p-6 shadow-lg animate-pulse-slow hover:shadow-xl transition-all duration-300 group">
+            <div className="backdrop-blur-xl bg-gradient-to-r from-amber-50/90 to-orange-50/90 dark:from-amber-900/50 dark:to-orange-900/50 border-l-4 border-amber-400 dark:border-amber-600 rounded-xl p-6 shadow-lg animate-pulse-slow hover:shadow-xl transition-all duration-300 group">
               <div className="flex items-center space-x-2 mb-3">
                 <AlertTriangle
-                  className="text-amber-600 group-hover:scale-110 transition-transform"
+                  className="text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform"
                   size={20}
                 />
-                <h3 className="font-semibold text-amber-800">
+                <h3 className="font-semibold text-amber-800 dark:text-amber-300">
                   Membresías por vencer
                 </h3>
               </div>
@@ -134,10 +134,10 @@ export function Dashboard() {
                       key={membresia.id}
                       className="flex items-center justify-between text-sm"
                     >
-                      <span className="text-amber-800">
+                      <span className="text-amber-800 dark:text-amber-300">
                         {membresia.usuario?.nombre} - {membresia.plan?.nombre}
                       </span>
-                      <span className="text-amber-600 font-medium">
+                      <span className="text-amber-600 dark:text-amber-400 font-medium">
                         {diasRestantes === 0
                           ? "Vence hoy"
                           : `${diasRestantes} días`}
@@ -152,10 +152,10 @@ export function Dashboard() {
           {/* Sección de información adicional */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Próximos Eventos */}
-            <div className="backdrop-blur-xl bg-white/80 rounded-xl p-5 shadow-lg border border-sky-100/50 hover:border-sky-200 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group animate-fadeIn">
+            <div className="backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 rounded-xl p-5 shadow-lg border border-sky-100/50 dark:border-sky-900/50 hover:border-sky-200 dark:hover:border-sky-700 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group animate-fadeIn">
               <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <Calendar
-                  className="text-sky-600 group-hover:rotate-12 transition-transform"
+                  className="text-sky-600 dark:text-sky-400 group-hover:rotate-12 transition-transform"
                   size={18}
                 />
                 <span>Próximos Eventos</span>
@@ -165,13 +165,13 @@ export function Dashboard() {
                   proximosEventos.map((evento) => (
                     <div
                       key={evento.id}
-                      className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                      className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                     >
                       <div>
-                        <p className="font-medium text-sm text-gray-900">
+                        <p className="font-medium text-sm text-gray-900 dark:text-gray-200">
                           {evento.titulo}
                         </p>
-                        <p className="text-xs text-gray-600">
+                        <p className="text-xs text-gray-600 dark:text-gray-400">
                           {new Date(
                             evento.fecha_inicio
                           ).toLocaleDateString("es-ES", {
@@ -185,12 +185,12 @@ export function Dashboard() {
                       <span
                         className={`px-2 py-0.5 text-xs rounded-full ${
                           evento.color === "blue"
-                            ? "bg-sky-100 text-sky-800"
+                            ? "bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-300"
                             : evento.color === "green"
-                            ? "bg-emerald-100 text-emerald-800"
+                            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300"
                             : evento.color === "orange"
-                            ? "bg-amber-100 text-amber-800"
-                            : "bg-gray-100 text-gray-800"
+                            ? "bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300"
+                            : "bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200"
                         }`}
                       >
                         {evento.tipo}
@@ -198,7 +198,7 @@ export function Dashboard() {
                     </div>
                   ))
                 ) : (
-                  <p className="text-gray-500 text-center py-3 text-sm">
+                  <p className="text-gray-500 dark:text-gray-400 text-center py-3 text-sm">
                     No hay eventos próximos
                   </p>
                 )}
@@ -206,48 +206,56 @@ export function Dashboard() {
             </div>
 
             {/* Miembros Recientes */}
-            <div className="backdrop-blur-xl bg-white/80 rounded-xl p-5 shadow-lg border border-emerald-100/50 hover:border-emerald-200 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group animate-fadeIn delay-100">
-              <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <div className="backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 rounded-xl p-5 shadow-lg border border-emerald-100/50 dark:border-emerald-900/50 hover:border-emerald-200 dark:hover:border-emerald-700 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group animate-fadeIn delay-100">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                 <Users
-                  className="text-emerald-600 group-hover:scale-110 transition-transform"
+                  className="text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform"
                   size={18}
                 />
                 <span>Miembros Recientes</span>
               </h3>
-              <div className="space-y-3">
-                {miembrosRecientes.map((usuario) => (
-                  <div
-                    key={usuario.id}
-                    className="flex items-center justify-between p-3 bg-white/80 rounded-lg hover:bg-white hover:shadow-md transition-all duration-200"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                        <span className="text-white text-xs font-medium">
-                          {usuario.nombre
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")
-                            .toUpperCase()}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="font-medium text-sm text-gray-900">
-                          {usuario.nombre}
-                        </p>
-                        <p className="text-xs text-gray-600">{usuario.email}</p>
-                      </div>
-                    </div>
-                    <span
-                      className={`px-2 py-0.5 text-xs rounded-full ${
-                        usuario.activo
-                          ? "bg-emerald-100 text-emerald-800"
-                          : "bg-rose-100 text-rose-800"
-                      }`}
+              <div className="space-y-2">
+                {miembrosRecientes.length > 0 ? (
+                  miembrosRecientes.map((usuario) => (
+                    <div
+                      key={usuario.id}
+                      className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                     >
-                      {usuario.activo ? "Activo" : "Inactivo"}
-                    </span>
-                  </div>
-                ))}
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                          <span className="text-white text-xs font-medium">
+                            {usuario.nombre
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")
+                              .toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm text-gray-900 dark:text-gray-200">
+                            {usuario.nombre}
+                          </p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">
+                            {usuario.email}
+                          </p>
+                        </div>
+                      </div>
+                      <span
+                        className={`px-2 py-0.5 text-xs rounded-full ${
+                          usuario.activo
+                            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300"
+                            : "bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-300"
+                        }`}
+                      >
+                        {usuario.activo ? "Activo" : "Inactivo"}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400 text-center py-3 text-sm">
+                    No hay miembros nuevos
+                  </p>
+                )}
               </div>
             </div>
 

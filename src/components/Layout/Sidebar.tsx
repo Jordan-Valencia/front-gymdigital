@@ -6,8 +6,6 @@ import {
   Package,
   ShoppingCart,
   UserCheck,
-  Camera,
-  Bell,
   ChevronLeft,
   ChevronRight,
   User,
@@ -27,7 +25,6 @@ const menuItems = [
   { id: "inventario", label: "Inventario", icon: Package },
   { id: "ventas", label: "Ventas", icon: ShoppingCart },
   { id: "entrenadores", label: "Entrenadores", icon: UserCheck },
-  { id: "galeria", label: "Galería", icon: Camera },
 ];
 
 export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
@@ -73,38 +70,42 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
   };
 
   const sidebarContent = (
-    <div className="h-full flex flex-col z-[510]">
+    <div className="h-full flex flex-col z-[510] bg-white dark:bg-gray-800">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
-        <AnimatePresence>
-          {!collapsed && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="overflow-hidden"
-            >
-              <h1 className="text-xl font-bold text-blue-600">
-                Gimnasio Lina García
-              </h1>
-              <p className="text-xs text-gray-500">Sistema de Gestión</p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 min-h-[56px]">
+  <AnimatePresence>
+    {!collapsed && (
+      <motion.div
+        layout
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="flex flex-col justify-center h-[40px]"
+      >
+        <h1 className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
+          Gimnasio Lina García
+        </h1>
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          Sistema de Gestión
+        </p>
+      </motion.div>
+    )}
+  </AnimatePresence>
 
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-          aria-label={collapsed ? "Expandir menú" : "Contraer menú"}
-        >
-          {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-        </button>
-      </div>
+  <button
+    onClick={() => setCollapsed(!collapsed)}
+    className="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+    aria-label={collapsed ? "Expandir menú" : "Contraer menú"}
+  >
+    {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+  </button>
+</div>
+
 
       {/* User Profile */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+          <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-gray-700 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
             <User size={20} />
           </div>
           <AnimatePresence>
@@ -116,8 +117,8 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
                 transition={transition}
                 className="overflow-hidden"
               >
-                <p className="font-medium text-sm text-gray-800">Admin</p>
-                <p className="text-xs text-gray-500">Administrador</p>
+                <p className="font-medium text-sm text-gray-800 dark:text-gray-200">Admin</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Administrador</p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -140,8 +141,8 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
                   }}
                   className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                     isActive
-                      ? "bg-blue-50 text-blue-600 font-medium border-l-4 border-blue-500"
-                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                      ? "bg-indigo-50 text-indigo-600 font-medium border-l-4 border-indigo-500 dark:bg-indigo-900/50 dark:text-indigo-400 dark:border-indigo-400"
+                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
                   }`}
                   aria-current={isActive ? "page" : undefined}
                 >
@@ -166,14 +167,6 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
           })}
         </ul>
       </nav>
-
-      {/* Footer */}
-      <div className="p-4 border-t border-gray-200 mt-auto">
-        <button className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">
-          <Bell className="w-5 h-5" />
-          {!collapsed && <span className="text-sm">Notificaciones</span>}
-        </button>
-      </div>
     </div>
   );
 
@@ -182,7 +175,7 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="fixed top-4 left-4 z-[1000] p-2 rounded-md bg-white text-gray-700 shadow-md md:hidden"
+        className="fixed top-4 left-4 z-[1000] p-2 rounded-md bg-white/80 backdrop-blur-sm text-gray-700 shadow-md md:hidden dark:bg-gray-800/80 dark:text-gray-300"
         aria-label="Abrir menú"
       >
         <Menu size={24} />
@@ -218,7 +211,7 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
         transition={transition}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className={`fixed inset-y-0 left-0 h-screen bg-white shadow-lg flex flex-col overflow-hidden z-[1000]`}
+        className={`fixed inset-y-0 left-0 h-screen bg-white dark:bg-gray-800 shadow-lg flex flex-col overflow-hidden z-[1000] dark:shadow-none dark:border-r dark:border-gray-700`}
       >
         {sidebarContent}
       </motion.aside>

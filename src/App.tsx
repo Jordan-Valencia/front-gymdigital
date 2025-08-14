@@ -101,7 +101,7 @@ function App() {
   return (
     <>
       <ToastProvider>
-        <div className="min-h-screen bg-gray-50 flex">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
           <Sidebar
             activeSection={activeSection}
             onSectionChange={setActiveSection}
@@ -111,7 +111,7 @@ function App() {
               title={getSectionTitle(activeSection)}
               onNotificationsClick={() => setShowNotificaciones(true)}
             />
-            <main className="flex-1 overflow-y-auto p-6 bg-gray-50">
+            <main className="flex-1 overflow-y-auto p-6 bg-gray-50 dark:bg-gray-900">
               {renderContent()}
             </main>
           </div>

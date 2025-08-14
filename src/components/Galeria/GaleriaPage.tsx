@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Plus, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useGymData } from "../../hooks/useGymData";
 

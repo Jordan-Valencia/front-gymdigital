@@ -9,6 +9,8 @@ import {
   Trash2,
   Save,
   XCircle,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { useGymData } from "../../hooks/useGymData";
 import { format } from "date-fns";
@@ -43,6 +45,28 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
   const { getNotificacionesNoLeidas, agregarEvento, agregarNotificacion } =
     useGymData();
   const { showToast } = useToast();
+  const [isDarkMode, setIsDarkMode] = useState(true);
+
+  useEffect(() => {
+    const isDark = localStorage.getItem("darkMode") === "true";
+    setIsDarkMode(isDark);
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, []);
+
+  const toggleDarkMode = () => {
+    const newIsDarkMode = !isDarkMode;
+    setIsDarkMode(newIsDarkMode);
+    localStorage.setItem("darkMode", newIsDarkMode.toString());
+    if (newIsDarkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  };
 
   // 📌 Estado para las notificaciones no leídas
   const [notificacionesNoLeidas, setNotificacionesNoLeidas] = useState<Notificacion[]>([]);
@@ -177,11 +201,11 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
   };
 
   return (
-    <header className="bg-white border-b px-6 py-4 sticky top-0 z-40">
+    <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b px-6 py-4 sticky top-0 z-40 dark:border-gray-700">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">{title}</h1>
-          <p className="text-sm text-gray-500">
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{title}</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             {new Date().toLocaleDateString("es-ES", {
               weekday: "long",
               day: "numeric",
@@ -191,12 +215,18 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
         </div>
 
         <div className="flex items-center gap-6">
+          <button
+            onClick={toggleDarkMode}
+            className="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          >
+            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
           {/* Quick Actions */}
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowScheduleModal(true)}
               className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium 
-              text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+              text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
               <Calendar size={16} />
               <span>Agendar</span>
@@ -204,7 +234,7 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
             <button
               onClick={() => setShowClassesModal(true)}
               className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium 
-              text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+              text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
               <Users size={16} />
               <span>Clases</span>
@@ -214,7 +244,7 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
           {/* Notificaciones */}
           <button
             onClick={onNotificationsClick}
-            className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100
+            className="relative p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700
               rounded-lg transition-colors"
           >
             <Bell size={20} />
@@ -224,7 +254,7 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
           </button>
 
           {/* Perfil */}
-          <div className="flex items-center gap-4 pl-6 border-l border-gray-200">
+          <div className="flex items-center gap-4 pl-6 border-l border-gray-200 dark:border-gray-700">
             <div className="relative group">
               <div
                 className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 
@@ -244,14 +274,14 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
             </div>
             <div className="group cursor-pointer">
               <p
-                className="text-sm font-medium text-gray-700 
-                group-hover:text-indigo-600 transition-colors"
+                className="text-sm font-medium text-gray-700 dark:text-gray-300
+                group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors"
               >
                 Admin
               </p>
               <p
-                className="text-xs text-gray-500 
-                group-hover:text-indigo-400 transition-colors"
+                className="text-xs text-gray-500 dark:text-gray-400
+                group-hover:text-indigo-400 dark:group-hover:text-indigo-500 transition-colors"
               >
                 Administrador
               </p>
@@ -263,19 +293,19 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
       {/* Schedule Modal */}
       {showScheduleModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div className="flex justify-between items-center p-4 border-b">
-              <h3 className="text-lg font-semibold">Programar Evento</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md">
+            <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
+              <h3 className="text-lg font-semibold dark:text-gray-100">Programar Evento</h3>
               <button
                 onClick={() => setShowScheduleModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               >
                 <X size={20} />
               </button>
             </div>
             <form onSubmit={handleScheduleSubmit} className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Título
                 </label>
                 <input
@@ -284,12 +314,12 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
                   onChange={(e) =>
                     setScheduleForm({ ...scheduleForm, title: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Descripción
                 </label>
                 <textarea
@@ -300,13 +330,13 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
                       description: e.target.value,
                     })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   rows={3}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Fecha
                   </label>
                   <input
@@ -315,12 +345,12 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
                     onChange={(e) =>
                       setScheduleForm({ ...scheduleForm, date: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Hora
                   </label>
                   <input
@@ -329,13 +359,13 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
                     onChange={(e) =>
                       setScheduleForm({ ...scheduleForm, time: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     required
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Tipo
                 </label>
                 <select
@@ -346,7 +376,7 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
                       type: e.target.value as "class" | "event" | "other",
                     })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="class">Clase</option>
                   <option value="event">Evento</option>
@@ -357,13 +387,13 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
                 <button
                   type="button"
                   onClick={() => setShowScheduleModal(false)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
                   Programar
                 </button>
@@ -376,26 +406,26 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
       {/* Classes Modal */}
       {showClassesModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
-            <div className="flex justify-between items-center p-4 border-b">
-              <h3 className="text-lg font-semibold">Clases del Día</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+            <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
+              <h3 className="text-lg font-semibold dark:text-gray-100">Clases del Día</h3>
               <button
                 onClick={() => setShowClassesModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               >
                 <X size={20} />
               </button>
             </div>
-            <div className="overflow-y-auto flex-1">
+            <div className="overflow-y-auto flex-1 dark:bg-gray-700">
               {classes.length > 0 ? (
-                <ul className="divide-y divide-gray-200">
+                <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                   {classes.map((cls) => (
-                    <li key={cls.id} className="p-4 hover:bg-gray-50">
+                    <li key={cls.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50">
                       {editingClass?.id === cls.id ? (
                         <div className="space-y-3">
                           <div className="grid grid-cols-2 gap-2">
                             <div>
-                              <label className="text-xs text-gray-500">
+                              <label className="text-xs text-gray-500 dark:text-gray-400">
                                 Título
                               </label>
                               <input
@@ -407,11 +437,11 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
                                     title: e.target.value,
                                   })
                                 }
-                                className="w-full px-2 py-1 border rounded text-sm"
+                                className="w-full px-2 py-1 border dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200 rounded text-sm"
                               />
                             </div>
                             <div>
-                              <label className="text-xs text-gray-500">
+                              <label className="text-xs text-gray-500 dark:text-gray-400">
                                 Instructor
                               </label>
                               <input
@@ -423,13 +453,13 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
                                     trainer: e.target.value,
                                   })
                                 }
-                                className="w-full px-2 py-1 border rounded text-sm"
+                                className="w-full px-2 py-1 border dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200 rounded text-sm"
                               />
                             </div>
                           </div>
                           <div className="grid grid-cols-3 gap-2">
                             <div>
-                              <label className="text-xs text-gray-500">
+                              <label className="text-xs text-gray-500 dark:text-gray-400">
                                 Hora
                               </label>
                               <input
@@ -441,11 +471,11 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
                                     time: e.target.value,
                                   })
                                 }
-                                className="w-full px-2 py-1 border rounded text-sm"
+                                className="w-full px-2 py-1 border dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200 rounded text-sm"
                               />
                             </div>
                             <div>
-                              <label className="text-xs text-gray-500">
+                              <label className="text-xs text-gray-500 dark:text-gray-400">
                                 Capacidad
                               </label>
                               <input
@@ -458,11 +488,11 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
                                     capacity: parseInt(e.target.value) || 1,
                                   })
                                 }
-                                className="w-full px-2 py-1 border rounded text-sm"
+                                className="w-full px-2 py-1 border dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200 rounded text-sm"
                               />
                             </div>
                             <div>
-                              <label className="text-xs text-gray-500">
+                              <label className="text-xs text-gray-500 dark:text-gray-400">
                                 Asistentes
                               </label>
                               <input
@@ -476,7 +506,7 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
                                     attendees: parseInt(e.target.value) || 0,
                                   })
                                 }
-                                className="w-full px-2 py-1 border rounded text-sm"
+                                className="w-full px-2 py-1 border dark:bg-gray-600 dark:border-gray-500 dark:text-gray-200 rounded text-sm"
                               />
                             </div>
                           </div>
@@ -484,7 +514,7 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
                             <button
                               type="button"
                               onClick={() => setEditingClass(null)}
-                              className="p-1 text-gray-500 hover:text-gray-700"
+                              className="p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                               title="Cancelar"
                             >
                               <XCircle size={18} />
@@ -492,7 +522,7 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
                             <button
                               type="button"
                               onClick={() => handleUpdateClass(editingClass)}
-                              className="p-1 text-green-600 hover:text-green-800"
+                              className="p-1 text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300"
                               title="Guardar cambios"
                             >
                               <Save size={18} />
@@ -502,17 +532,17 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
                       ) : (
                         <div className="flex justify-between items-start">
                           <div>
-                            <h4 className="font-medium text-gray-900">
+                            <h4 className="font-medium text-gray-900 dark:text-gray-100">
                               {cls.title}
                             </h4>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
                               {format(
                                 new Date(`${cls.date}T${cls.time}`),
                                 "HH:mm",
                               )}{" "}
                               • {cls.trainer}
                             </p>
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                               {cls.attendees}/{cls.capacity} asistentes
                             </p>
                           </div>
@@ -522,8 +552,8 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
                               disabled={cls.attendees >= cls.capacity}
                               className={`px-3 py-1 text-sm font-medium rounded-md ${
                                 cls.attendees >= cls.capacity
-                                  ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                                  : "bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
+                                  ? "bg-gray-200 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-400"
+                                  : "bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-300 dark:hover:bg-indigo-900"
                               }`}
                             >
                               {cls.attendees >= cls.capacity
@@ -533,14 +563,14 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
                             <div className="flex space-x-1">
                               <button
                                 onClick={() => setEditingClass(cls)}
-                                className="p-1 text-gray-500 hover:text-blue-600"
+                                className="p-1 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
                                 title="Editar clase"
                               >
                                 <Edit2 size={16} />
                               </button>
                               <button
                                 onClick={() => handleDeleteClass(cls.id)}
-                                className="p-1 text-gray-500 hover:text-red-600"
+                                className="p-1 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400"
                                 title="Eliminar clase"
                               >
                                 <Trash2 size={16} />
@@ -553,15 +583,15 @@ export function Header({ title, onNotificationsClick }: HeaderProps) {
                   ))}
                 </ul>
               ) : (
-                <div className="p-8 text-center text-gray-500">
+                <div className="p-8 text-center text-gray-500 dark:text-gray-400">
                   No hay clases programadas para hoy.
                 </div>
               )}
             </div>
-            <div className="p-4 border-t flex justify-end">
+            <div className="p-4 border-t dark:border-gray-700 flex justify-end">
               <button
                 onClick={() => setShowClassesModal(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 Cerrar
               </button>

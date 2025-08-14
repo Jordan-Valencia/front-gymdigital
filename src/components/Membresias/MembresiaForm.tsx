@@ -1,26 +1,18 @@
-import React, { useState, useEffect } from "react";
-import { X, Save } from "lucide-react";
-import { useGymData } from "../../hooks/useGymData";
-import { Membresia } from "../../types";
+
+import type React from "react"
+import { useState, useEffect } from "react"
+import { X, Save } from "lucide-react"
+import { useGymData } from "../../hooks/useGymData"
+import type { Membresia } from "../../types"
 
 export interface MembresiaFormProps {
-  membresia?: Membresia | null;
-  onClose: () => void;
-  onSave: (
-    membresiaData: Omit<
-      Membresia,
-      "id" | "fecha_registro" | "usuario" | "plan"
-    >,
-  ) => void;
+  membresia?: Membresia | null
+  onClose: () => void
+  onSave: (membresiaData: Omit<Membresia, "id" | "fecha_registro" | "usuario" | "plan">) => void
 }
 
-export function MembresiaForm({
-  membresia,
-  onClose,
-  onSave,
-}: MembresiaFormProps) {
-  const { agregarMembresia, actualizarMembresia, usuarios, planes } =
-    useGymData();
+export function MembresiaForm({ membresia, onClose, onSave }: MembresiaFormProps) {
+  const { agregarMembresia, actualizarMembresia, usuarios, planes } = useGymData()
 
   const [formData, setFormData] = useState({
     usuario_id: "",
@@ -30,7 +22,7 @@ export function MembresiaForm({
     precio_pagado: 0,
     metodo_pago: "efectivo",
     fecha_pago: new Date().toISOString().split("T")[0],
-  });
+  })
 
   useEffect(() => {
     if (membresia) {
@@ -42,29 +34,22 @@ export function MembresiaForm({
         precio_pagado: membresia.precio_pagado,
         metodo_pago: membresia.metodo_pago,
         fecha_pago: membresia.fecha_pago.split("T")[0],
-      });
+      })
     }
-  }, [membresia]);
+  }, [membresia])
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >,
-  ) => {
-    const { name, value } = e.target;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
     setFormData((prev) => ({
       ...prev,
       [name]: value,
-    }));
-  };
+    }))
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    const dataToSubmit: Omit<
-      Membresia,
-      "id" | "fecha_registro" | "usuario" | "plan"
-    > = {
+    const dataToSubmit: Omit<Membresia, "id" | "fecha_registro" | "usuario" | "plan"> = {
       usuario_id: formData.usuario_id,
       plan_id: formData.plan_id,
       fecha_inicio: new Date(formData.fecha_inicio).toISOString(),
@@ -72,80 +57,82 @@ export function MembresiaForm({
       precio_pagado: formData.precio_pagado,
       metodo_pago: formData.metodo_pago,
       fecha_pago: new Date(formData.fecha_pago).toISOString(),
-    };
-
-    if (membresia) {
-      actualizarMembresia(membresia.id, dataToSubmit);
-    } else {
-      agregarMembresia(dataToSubmit);
     }
 
-    onSave(dataToSubmit);
-    onClose();
-  };
+    if (membresia) {
+      actualizarMembresia(membresia.id, dataToSubmit)
+    } else {
+      agregarMembresia(dataToSubmit)
+    }
+
+    onSave(dataToSubmit)
+    onClose()
+  }
 
   const calcularFechaFin = (fechaInicio: string, planId: string) => {
-    const plan = planes.find((p) => p.id === planId);
-    if (!plan) return "";
+    const plan = planes.find((p) => p.id === planId)
+    if (!plan) return ""
 
-    const fecha = new Date(fechaInicio);
+    const fecha = new Date(fechaInicio)
     // Default to 1 month if duration is not specified
-    const meses = 1; // Default duration
-    fecha.setMonth(fecha.getMonth() + meses);
+    const meses = 1 // Default duration
+    fecha.setMonth(fecha.getMonth() + meses)
 
-    return fecha.toISOString().split("T")[0];
-  };
+    return fecha.toISOString().split("T")[0]
+  }
 
   const handlePlanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const planId = e.target.value;
-    const selectedPlan = planes.find((p) => p.id === planId);
+    const planId = e.target.value
+    const selectedPlan = planes.find((p) => p.id === planId)
 
     if (selectedPlan) {
-      const startDate = new Date(formData.fecha_inicio);
-      const endDate = new Date(startDate);
+      const startDate = new Date(formData.fecha_inicio)
+      const endDate = new Date(startDate)
       // Assuming a default duration of 1 month if not specified
-      const durationMonths = 1;
-      endDate.setMonth(startDate.getMonth() + durationMonths);
+      const durationMonths = 1
+      endDate.setMonth(startDate.getMonth() + durationMonths)
 
       setFormData((prev) => ({
         ...prev,
         plan_id: planId,
         fecha_fin: endDate.toISOString().split("T")[0],
         precio_pagado: selectedPlan.precio * durationMonths,
-      }));
+      }))
     } else {
       setFormData((prev) => ({
         ...prev,
         plan_id: planId,
         fecha_fin: "",
         precio_pagado: 0,
-      }));
+      }))
     }
-  };
+  }
 
   const handleFechaInicioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const fechaInicio = e.target.value;
-    const fechaFin = formData.plan_id
-      ? calcularFechaFin(fechaInicio, formData.plan_id)
-      : "";
+    const fechaInicio = e.target.value
+    const fechaFin = formData.plan_id ? calcularFechaFin(fechaInicio, formData.plan_id) : ""
 
     setFormData((prev) => ({
       ...prev,
       fecha_inicio: fechaInicio,
       fecha_fin: fechaFin,
-    }));
-  };
+    }))
+  }
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[900] ml-20">
-      <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4 relative z-[901] shadow-2xl">
+      <div
+        className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md mx-4 relative z-[901] shadow-2xl 
+        border border-gray-200 dark:border-gray-700"
+      >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
             {membresia ? "Editar Membresía" : "Nueva Membresía"}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-500"
+            className="text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-300 
+              transition-colors"
             aria-label="Cerrar"
           >
             <X size={24} />
@@ -154,10 +141,7 @@ export function MembresiaForm({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label
-              htmlFor="usuario_id"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
+            <label htmlFor="usuario_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Miembro
             </label>
             <select
@@ -166,7 +150,9 @@ export function MembresiaForm({
               value={formData.usuario_id}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
+                bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
+                focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">Seleccionar miembro</option>
               {usuarios.map((usuario) => (
@@ -178,10 +164,7 @@ export function MembresiaForm({
           </div>
 
           <div>
-            <label
-              htmlFor="plan_id"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
+            <label htmlFor="plan_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Plan
             </label>
             <select
@@ -190,7 +173,9 @@ export function MembresiaForm({
               value={formData.plan_id}
               onChange={handlePlanChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
+                bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
+                focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">Seleccionar plan</option>
               {planes.map((plan) => (
@@ -203,10 +188,7 @@ export function MembresiaForm({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label
-                htmlFor="fecha_inicio"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+              <label htmlFor="fecha_inicio" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Fecha de inicio
               </label>
               <input
@@ -216,15 +198,14 @@ export function MembresiaForm({
                 value={formData.fecha_inicio}
                 onChange={handleFechaInicioChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
+                  bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
+                  focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
             <div>
-              <label
-                htmlFor="fecha_fin"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+              <label htmlFor="fecha_fin" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Fecha de vencimiento
               </label>
               <input
@@ -235,7 +216,8 @@ export function MembresiaForm({
                 onChange={handleChange}
                 required
                 disabled
-                className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg cursor-not-allowed"
+                className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-600 
+                  rounded-lg cursor-not-allowed text-gray-500 dark:text-gray-400"
               />
             </div>
           </div>
@@ -244,7 +226,7 @@ export function MembresiaForm({
             <div>
               <label
                 htmlFor="precio_pagado"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
               >
                 Precio Pagado
               </label>
@@ -257,15 +239,14 @@ export function MembresiaForm({
                 min="0"
                 step="0.01"
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
+                  bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
+                  focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
             <div>
-              <label
-                htmlFor="metodo_pago"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+              <label htmlFor="metodo_pago" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Método de Pago
               </label>
               <select
@@ -274,7 +255,9 @@ export function MembresiaForm({
                 value={formData.metodo_pago}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
+                  bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
+                  focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="efectivo">Efectivo</option>
                 <option value="tarjeta">Tarjeta</option>
@@ -284,10 +267,7 @@ export function MembresiaForm({
           </div>
 
           <div>
-            <label
-              htmlFor="fecha_pago"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
+            <label htmlFor="fecha_pago" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Fecha de Pago
             </label>
             <input
@@ -297,7 +277,9 @@ export function MembresiaForm({
               value={formData.fecha_pago}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
+                bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
+                focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
@@ -305,13 +287,17 @@ export function MembresiaForm({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 
+                text-gray-700 dark:text-gray-300 rounded-lg 
+                hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
+              className="flex-1 px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg 
+                hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors 
+                flex items-center justify-center space-x-2"
             >
               <Save size={18} />
               <span>{membresia ? "Guardar cambios" : "Crear membresía"}</span>
@@ -320,5 +306,5 @@ export function MembresiaForm({
         </form>
       </div>
     </div>
-  );
+  )
 }

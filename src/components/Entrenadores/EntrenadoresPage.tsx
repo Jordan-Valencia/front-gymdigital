@@ -1,76 +1,50 @@
-import React, { useState } from "react";
-import {
-  Plus,
-  Search,
-  User,
-  Phone,
-  Mail,
-  DollarSign,
-  Edit2,
-  Trash2,
-  Calendar,
-  Star,
-} from "lucide-react";
-import { useGymData } from "../../hooks/useGymData";
-import { Entrenador } from "../../types";
+import type React from "react"
+import { useState } from "react"
+import { Plus, Search, User, Phone, Mail, DollarSign, Edit2, Trash2, Calendar, Star } from "lucide-react"
+import { useGymData } from "../../hooks/useGymData"
+import type { Entrenador } from "../../types"
 
 export function EntrenadoresPage() {
-  const {
-    entrenadores,
-    agregarEntrenador,
-    actualizarEntrenador,
-    eliminarEntrenador,
-  } = useGymData();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [showForm, setShowForm] = useState(false);
-  const [editingEntrenador, setEditingEntrenador] = useState<Entrenador | null>(
-    null,
-  );
-  const [formData, setFormData] = useState<
-    Omit<Entrenador, "id" | "fecha_registro">
-  >({
+  const { entrenadores, agregarEntrenador, actualizarEntrenador, eliminarEntrenador } = useGymData()
+  const [searchTerm, setSearchTerm] = useState("")
+  const [showForm, setShowForm] = useState(false)
+  const [editingEntrenador, setEditingEntrenador] = useState<Entrenador | null>(null)
+  const [formData, setFormData] = useState<Omit<Entrenador, "id" | "fecha_registro">>({
     nombre: "",
     telefono: "",
     email: "",
     especialidad: "",
     tarifa_hora: 0,
     activo: true,
-  });
+  })
 
   const filteredEntrenadores = entrenadores.filter(
     (entrenador) =>
       entrenador.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
       entrenador.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       entrenador.telefono.includes(searchTerm) ||
-      (entrenador.especialidad
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase()) ??
-        false),
-  );
+      (entrenador.especialidad?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false),
+  )
 
-  const handleInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >,
-  ) => {
-    const { name, value, type } = e.target as HTMLInputElement;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target as HTMLInputElement
 
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "number" ? parseFloat(value) || 0 : value,
-    }));
-  };
+      [name]: type === "number" ? Number.parseFloat(value) || 0 : value,
+    }))
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
     if (editingEntrenador) {
-      actualizarEntrenador(editingEntrenador.id, formData);
+      actualizarEntrenador(editingEntrenador.id, formData)
     } else {
-      agregarEntrenador(formData);
+      agregarEntrenador(formData)
     }
 
-    setShowForm(false);
+    setShowForm(false)
     setFormData({
       nombre: "",
       telefono: "",
@@ -78,12 +52,12 @@ export function EntrenadoresPage() {
       especialidad: "",
       tarifa_hora: 0,
       activo: true,
-    });
-    setEditingEntrenador(null);
-  };
+    })
+    setEditingEntrenador(null)
+  }
 
   const handleEdit = (entrenador: Entrenador) => {
-    setEditingEntrenador(entrenador);
+    setEditingEntrenador(entrenador)
     setFormData({
       nombre: entrenador.nombre,
       telefono: entrenador.telefono,
@@ -91,28 +65,24 @@ export function EntrenadoresPage() {
       especialidad: entrenador.especialidad || "",
       tarifa_hora: entrenador.tarifa_hora,
       activo: entrenador.activo,
-    });
-    setShowForm(true);
-  };
+    })
+    setShowForm(true)
+  }
 
   const handleDelete = (id: string) => {
-    if (
-      window.confirm("¿Estás seguro de que deseas eliminar este entrenador?")
-    ) {
-      eliminarEntrenador(id);
+    if (window.confirm("¿Estás seguro de que deseas eliminar este entrenador?")) {
+      eliminarEntrenador(id)
     }
-  };
+  }
 
   return (
     <div className="p-6 ml-20">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 mb-4 md:mb-0">
-          Gestión de Entrenadores
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4 md:mb-0">Gestión de Entrenadores</h1>
         <button
           onClick={() => {
-            setShowForm(true);
-            setEditingEntrenador(null);
+            setShowForm(true)
+            setEditingEntrenador(null)
             setFormData({
               nombre: "",
               telefono: "",
@@ -120,7 +90,7 @@ export function EntrenadoresPage() {
               especialidad: "",
               tarifa_hora: 0,
               activo: true,
-            });
+            })
           }}
           className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors"
         >
@@ -129,43 +99,42 @@ export function EntrenadoresPage() {
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6">
         <div className="relative mb-6">
           <Search
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500"
             size={18}
           />
           <input
             type="text"
             placeholder="Buscar entrenadores..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
 
         {showForm && (
-          <div className="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-200">
-            <h3 className="text-lg font-medium text-gray-800 mb-4">
+          /* Agregado dark mode al formulario */
+          <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg mb-6 border border-gray-200 dark:border-gray-600">
+            <h3 className="text-lg font-medium text-gray-800 dark:text-gray-100 mb-4">
               {editingEntrenador ? "Editar Entrenador" : "Nuevo Entrenador"}
             </h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nombre
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre</label>
                   <input
                     type="text"
                     name="nombre"
                     value={formData.nombre}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Especialidad
                   </label>
                   <input
@@ -173,37 +142,33 @@ export function EntrenadoresPage() {
                     name="especialidad"
                     value={formData.especialidad}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Teléfono
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Teléfono</label>
                   <input
                     type="tel"
                     name="telefono"
                     value={formData.telefono}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
                   <input
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Tarifa por Hora ($)
                   </label>
                   <input
@@ -213,14 +178,12 @@ export function EntrenadoresPage() {
                     onChange={handleInputChange}
                     min="0"
                     step="0.01"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Estado
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Estado</label>
                   <select
                     name="activo"
                     value={formData.activo ? "activo" : "inactivo"}
@@ -230,7 +193,7 @@ export function EntrenadoresPage() {
                         activo: e.target.value === "activo",
                       }))
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                   >
                     <option value="activo">Activo</option>
                     <option value="inactivo">Inactivo</option>
@@ -241,10 +204,10 @@ export function EntrenadoresPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    setShowForm(false);
-                    setEditingEntrenador(null);
+                    setShowForm(false)
+                    setEditingEntrenador(null)
                   }}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                 >
                   Cancelar
                 </button>
@@ -263,72 +226,65 @@ export function EntrenadoresPage() {
           {filteredEntrenadores.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredEntrenadores.map((entrenador) => (
+                /* Agregado dark mode a las tarjetas de entrenadores */
                 <div
                   key={entrenador.id}
-                  className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow"
+                  className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl p-5 hover:shadow-md transition-shadow"
                 >
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center">
-                        <User className="text-indigo-600" size={24} />
+                      <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
+                        <User className="text-indigo-600 dark:text-indigo-400" size={24} />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-800">
-                          {entrenador.nombre}
-                        </h3>
-                        <div className="flex items-center text-sm text-gray-500">
-                          <Star
-                            className="w-4 h-4 text-yellow-400 mr-1"
-                            fill="currentColor"
-                          />
-                          <span>
-                            {entrenador.especialidad || "Sin especialidad"}
-                          </span>
+                        <h3 className="font-semibold text-gray-800 dark:text-gray-100">{entrenador.nombre}</h3>
+                        <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                          <Star className="w-4 h-4 text-yellow-400 mr-1" fill="currentColor" />
+                          <span>{entrenador.especialidad || "Sin especialidad"}</span>
                         </div>
                       </div>
                     </div>
                     <span
-                      className={`px-2 py-1 text-xs rounded-full ${entrenador.activo ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}`}
+                      className={`px-2 py-1 text-xs rounded-full ${
+                        entrenador.activo
+                          ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400"
+                          : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300"
+                      }`}
                     >
                       {entrenador.activo ? "Activo" : "Inactivo"}
                     </span>
                   </div>
 
-                  <div className="space-y-2 text-sm text-gray-600 mb-4">
+                  <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300 mb-4">
                     <div className="flex items-center">
-                      <Phone className="w-4 h-4 text-gray-400 mr-2" />
+                      <Phone className="w-4 h-4 text-gray-400 dark:text-gray-500 mr-2" />
                       <span>{entrenador.telefono}</span>
                     </div>
                     <div className="flex items-center">
-                      <Mail className="w-4 h-4 text-gray-400 mr-2" />
+                      <Mail className="w-4 h-4 text-gray-400 dark:text-gray-500 mr-2" />
                       <span className="truncate">{entrenador.email}</span>
                     </div>
                     <div className="flex items-center">
-                      <DollarSign className="w-4 h-4 text-gray-400 mr-2" />
+                      <DollarSign className="w-4 h-4 text-gray-400 dark:text-gray-500 mr-2" />
                       <span>${entrenador.tarifa_hora.toFixed(2)}/hora</span>
                     </div>
-                    <div className="flex items-center text-xs text-gray-400">
+                    <div className="flex items-center text-xs text-gray-400 dark:text-gray-500">
                       <Calendar className="w-3.5 h-3.5 mr-1.5" />
-                      <span>
-                        Registrado el{" "}
-                        {new Date(entrenador.fecha_registro).toLocaleDateString(
-                          "es-ES",
-                        )}
-                      </span>
+                      <span>Registrado el {new Date(entrenador.fecha_registro).toLocaleDateString("es-ES")}</span>
                     </div>
                   </div>
 
-                  <div className="flex justify-end space-x-2 pt-2 border-t border-gray-100">
+                  <div className="flex justify-end space-x-2 pt-2 border-t border-gray-100 dark:border-gray-600">
                     <button
                       onClick={() => handleEdit(entrenador)}
-                      className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                      className="p-2 text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"
                       title="Editar"
                     >
                       <Edit2 size={18} />
                     </button>
                     <button
                       onClick={() => handleDelete(entrenador.id)}
-                      className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                       title="Eliminar"
                     >
                       <Trash2 size={18} />
@@ -338,12 +294,11 @@ export function EntrenadoresPage() {
               ))}
             </div>
           ) : (
+            /* Agregado dark mode al estado vacío */
             <div className="text-center py-12">
-              <User className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">
-                No hay entrenadores
-              </h3>
-              <p className="mt-1 text-sm text-gray-500">
+              <User className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">No hay entrenadores</h3>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 {searchTerm
                   ? "No se encontraron entrenadores que coincidan con la búsqueda."
                   : "Comienza agregando un nuevo entrenador."}
@@ -365,5 +320,5 @@ export function EntrenadoresPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }
