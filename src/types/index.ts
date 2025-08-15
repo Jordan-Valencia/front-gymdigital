@@ -129,6 +129,7 @@ export interface Evento {
   fecha_fin?: string;
   tipo: string;
   color?: string;
+  ubicacion?: string;
   fecha_registro: string;
 }
 

@@ -1,67 +1,80 @@
-"use client"
-
 import type React from "react"
 import { useState, useEffect } from "react"
 import { X, Save } from "lucide-react"
-import type { Usuario } from "../../types"
+import type { Gasto } from "../../types"
 import { useGymData } from "../../hooks/useGymData"
 import { useToast } from "../../contexts/ToastContext" 
 
-interface UsuarioFormProps {
-  usuario?: Usuario
+interface GastoFormProps {
+  gasto?: Gasto
   onClose: () => void
   onSave: () => void
 }
 
-export function UsuarioForm({ usuario, onClose, onSave }: UsuarioFormProps) {
-  const { agregarUsuario, actualizarUsuario } = useGymData()
-  const { showToast } = useToast() // Added toast hook
+const categorias = [
+    "Instalaciones y Alquiler",
+    "Equipamiento y Mantenimiento",
+    "Servicios",
+    "Personal",
+    "Marketing y Publicidad",
+    "Suministros y Compras",
+    "Administración y Legal",
+    "Otros",
+  ]
+  
+
+export function GastoForm({ gasto, onClose, onSave }: GastoFormProps) {
+  const { agregarGasto, actualizarGasto } = useGymData()
+  const { showToast } = useToast() 
   const [formData, setFormData] = useState({
-    nombre: "",
-    telefono: "",
-    email: "",
-    fecha_nacimiento: "",
-    activo: true,
-    notas: "",
+    descripcion: "",
+    monto: "",
+    categoria: "",
+    fecha: new Date().toISOString().split("T")[0],
+    concepto: "",
   })
 
   useEffect(() => {
-    if (usuario) {
+    if (gasto) {
       setFormData({
-        nombre: usuario.nombre,
-        telefono: usuario.telefono,
-        email: usuario.email,
-        fecha_nacimiento: usuario.fecha_nacimiento,
-        activo: usuario.activo,
-        notas: usuario.notas || "",
+        descripcion: gasto.descripcion || "",
+        monto: gasto.monto.toString(),
+        categoria: gasto.categoria || "",
+        fecha: gasto.fecha,
+        concepto: gasto.concepto || "",
       })
     }
-  }, [usuario])
+  }, [gasto])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    const gastoData = {
+      ...formData,
+      monto: Number.parseFloat(formData.monto),
+    }
+
     try {
-      if (usuario) {
-        await actualizarUsuario(usuario.id, formData)
-        showToast("Usuario actualizado correctamente", "success")
+      if (gasto) {
+        await actualizarGasto(gasto.id, gastoData)
+        showToast("Gasto actualizado correctamente", "success")
       } else {
-        await agregarUsuario(formData)
-        showToast("Usuario creado correctamente", "success")
+        await agregarGasto(gastoData)
+        showToast("Gasto creado correctamente", "success")
       }
 
-      onSave() // Call onSave to refresh the list
+      onSave()
       onClose()
     } catch (error) {
-      showToast("Error al guardar el usuario", "error")
+      showToast("Error al guardar el gasto", "error")
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+      [name]: value,
     }))
   }
 
@@ -70,7 +83,7 @@ export function UsuarioForm({ usuario, onClose, onSave }: UsuarioFormProps) {
       <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md mx-4">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-            {usuario ? "Editar Miembro" : "Agregar Miembro"}
+            {gasto ? "Editar Gasto" : "Agregar Gasto"}
           </h2>
           <button
             onClick={onClose}
@@ -82,77 +95,72 @@ export function UsuarioForm({ usuario, onClose, onSave }: UsuarioFormProps) {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre completo *</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Descripción *</label>
             <input
               type="text"
-              name="nombre"
-              value={formData.nombre}
+              name="descripcion"
+              value={formData.descripcion}
               onChange={handleChange}
               required
+              placeholder="Ej: Compra de pesas, Pago de electricidad..."
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:placeholder-gray-400"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Teléfono *</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Monto *</label>
             <input
-              type="tel"
-              name="telefono"
-              value={formData.telefono}
+              type="number"
+              name="monto"
+              value={formData.monto}
               onChange={handleChange}
               required
+              min="0"
+              step="0.01"
+              placeholder="0.00"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:placeholder-gray-400"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email *</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Categoría *</label>
+            <select
+              name="categoria"
+              value={formData.categoria}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:placeholder-gray-400"
-            />
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+            >
+              <option value="">Seleccionar categoría</option>
+              {categorias.map((categoria) => (
+                <option key={categoria} value={categoria}>
+                  {categoria}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Fecha de nacimiento *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fecha *</label>
             <input
               type="date"
-              name="fecha_nacimiento"
-              value={formData.fecha_nacimiento}
+              name="fecha"
+              value={formData.fecha}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:placeholder-gray-400"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
             />
-          </div>
-
-          <div>
-            <label className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                name="activo"
-                checked={formData.activo}
-                onChange={handleChange}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
-              />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Usuario activo</span>
-            </label>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notas</label>
             <textarea
-              name="notas"
-              value={formData.notas}
+              name="concepto"
+              value={formData.concepto}
               onChange={handleChange}
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:placeholder-gray-400"
-              placeholder="Información adicional..."
+              placeholder="Información adicional sobre el gasto..."
             />
           </div>
 

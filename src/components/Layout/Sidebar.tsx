@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+"use client"
+
+import { useState, useEffect } from "react"
 import {
   Home,
   Users,
@@ -10,12 +12,13 @@ import {
   ChevronRight,
   User,
   Menu,
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+  Receipt,
+} from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 
 interface SidebarProps {
-  activeSection: string;
-  onSectionChange: (section: string) => void;
+  activeSection: string
+  onSectionChange: (section: string) => void
 }
 
 const menuItems = [
@@ -25,82 +28,78 @@ const menuItems = [
   { id: "inventario", label: "Inventario", icon: Package },
   { id: "ventas", label: "Ventas", icon: ShoppingCart },
   { id: "entrenadores", label: "Entrenadores", icon: UserCheck },
-];
+  { id: "gastos", label: "Gastos", icon: Receipt },
+]
 
 export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
-  const [collapsed, setCollapsed] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
+  const [collapsed, setCollapsed] = useState(true)
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     const handleResize = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
+      const mobile = window.innerWidth < 768
+      setIsMobile(mobile)
       // On mobile, we want to keep it collapsed by default
-      setCollapsed(mobile);
-    };
+      setCollapsed(mobile)
+    }
 
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+    handleResize()
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
 
   const sidebarVariants = {
     open: { width: "260px", x: 0 },
     closed: { width: "80px", x: 0 },
     mobileOpen: { x: 0 },
     mobileClosed: { x: "-100%" },
-  };
+  }
 
   const transition = {
     type: "tween" as const,
     duration: 0.15,
     ease: [0.4, 0, 0.2, 1] as const,
-  };
+  }
 
   const handleMouseEnter = () => {
     if (!isMobile) {
-      setCollapsed(false);
+      setCollapsed(false)
     }
-  };
+  }
 
   const handleMouseLeave = () => {
     if (!isMobile) {
-      setCollapsed(true);
+      setCollapsed(true)
     }
-  };
+  }
 
   const sidebarContent = (
     <div className="h-full flex flex-col z-[510] bg-white dark:bg-gray-800">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 min-h-[56px]">
-  <AnimatePresence>
-    {!collapsed && (
-      <motion.div
-        layout
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="flex flex-col justify-center h-[40px]"
-      >
-        <h1 className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
-          Gimnasio Lina García
-        </h1>
-        <p className="text-xs text-gray-500 dark:text-gray-400">
-          Sistema de Gestión
-        </p>
-      </motion.div>
-    )}
-  </AnimatePresence>
+        <AnimatePresence>
+          {!collapsed && (
+            <motion.div
+              layout
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex flex-col justify-center h-[40px]"
+            >
+              <h1 className="text-xl font-bold text-indigo-600 dark:text-indigo-400">Gimnasio Lina García</h1>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Sistema de Gestión</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-  <button
-    onClick={() => setCollapsed(!collapsed)}
-    className="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-    aria-label={collapsed ? "Expandir menú" : "Contraer menú"}
-  >
-    {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-  </button>
-</div>
-
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          aria-label={collapsed ? "Expandir menú" : "Contraer menú"}
+        >
+          {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+        </button>
+      </div>
 
       {/* User Profile */}
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
@@ -129,15 +128,15 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
       <nav className="flex-1 py-4 px-2">
         <ul className="space-y-1">
           {menuItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeSection === item.id;
+            const Icon = item.icon
+            const isActive = activeSection === item.id
 
             return (
               <li key={item.id}>
                 <button
                   onClick={() => {
-                    onSectionChange(item.id);
-                    if (isMobile) setCollapsed(true);
+                    onSectionChange(item.id)
+                    if (isMobile) setCollapsed(true)
                   }}
                   className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                     isActive
@@ -163,12 +162,12 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
                   </AnimatePresence>
                 </button>
               </li>
-            );
+            )
           })}
         </ul>
       </nav>
     </div>
-  );
+  )
 
   return (
     <>
@@ -198,15 +197,7 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
       {/* Sidebar */}
       <motion.aside
         initial={isMobile ? "mobileClosed" : "closed"}
-        animate={
-          isMobile
-            ? collapsed
-              ? "mobileClosed"
-              : "mobileOpen"
-            : collapsed
-              ? "closed"
-              : "open"
-        }
+        animate={isMobile ? (collapsed ? "mobileClosed" : "mobileOpen") : collapsed ? "closed" : "open"}
         variants={sidebarVariants}
         transition={transition}
         onMouseEnter={handleMouseEnter}
@@ -216,5 +207,5 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
         {sidebarContent}
       </motion.aside>
     </>
-  );
+  )
 }

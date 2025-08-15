@@ -27,7 +27,7 @@ export function Dashboard() {
 
   // Cargar estadísticas al montar el componente
   useEffect(() => {
-    getDashboardStats().then((data:DashboardStats | null) => {
+    getDashboardStats().then((data: DashboardStats | null) => {
       if (data) setStats(data);
     });
   }, []);
@@ -127,7 +127,7 @@ export function Dashboard() {
                   const diasRestantes = Math.ceil(
                     (new Date(membresia.fecha_fin).getTime() -
                       new Date().getTime()) /
-                      (1000 * 60 * 60 * 24)
+                    (1000 * 60 * 60 * 24)
                   );
                   return (
                     <div
@@ -183,15 +183,14 @@ export function Dashboard() {
                         </p>
                       </div>
                       <span
-                        className={`px-2 py-0.5 text-xs rounded-full ${
-                          evento.color === "blue"
+                        className={`px-2 py-0.5 text-xs rounded-full ${evento.color === "blue"
                             ? "bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-300"
                             : evento.color === "green"
-                            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300"
-                            : evento.color === "orange"
-                            ? "bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300"
-                            : "bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200"
-                        }`}
+                              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300"
+                              : evento.color === "orange"
+                                ? "bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300"
+                                : "bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200"
+                          }`}
                       >
                         {evento.tipo}
                       </span>
@@ -241,11 +240,10 @@ export function Dashboard() {
                         </div>
                       </div>
                       <span
-                        className={`px-2 py-0.5 text-xs rounded-full ${
-                          usuario.activo
+                        className={`px-2 py-0.5 text-xs rounded-full ${usuario.activo
                             ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300"
                             : "bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-300"
-                        }`}
+                          }`}
                       >
                         {usuario.activo ? "Activo" : "Inactivo"}
                       </span>
@@ -260,20 +258,23 @@ export function Dashboard() {
             </div>
 
             {/* Resumen Financiero */}
-            <div className="backdrop-blur-xl bg-white/80 rounded-xl p-5 shadow-lg border border-violet-100/50 hover:border-violet-200 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group animate-fadeIn delay-200">
-              <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <div className="backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 rounded-xl p-5 shadow-lg 
+                border border-violet-100/50 dark:border-violet-900/50 
+                hover:border-violet-200 dark:hover:border-violet-800
+                transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group animate-fadeIn delay-200">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                 <DollarSign
-                  className="text-violet-600 group-hover:rotate-12 transition-transform"
+                  className="text-violet-600 dark:text-violet-400 group-hover:rotate-12 transition-transform"
                   size={18}
                 />
                 <span>Resumen Financiero</span>
               </h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
                     Ingresos por membresías
                   </span>
-                  <span className="font-semibold text-emerald-600">
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
                     $
                     {membresias
                       .reduce((sum, m) => sum + m.precio_pagado, 0)
@@ -281,10 +282,10 @@ export function Dashboard() {
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
                     Membresías activas
                   </span>
-                  <span className="font-semibold text-indigo-600">
+                  <span className="font-semibold text-indigo-600 dark:text-indigo-400">
                     {
                       membresias.filter(
                         (m) => new Date(m.fecha_fin) > new Date()
@@ -293,35 +294,36 @@ export function Dashboard() {
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
                     Promedio por membresía
                   </span>
-                  <span className="font-semibold text-gray-900">
+                  <span className="font-semibold text-gray-900 dark:text-gray-100">
                     $
                     {membresias.length > 0
                       ? (
-                          membresias.reduce(
-                            (sum, m) => sum + m.precio_pagado,
-                            0
-                          ) / membresias.length
-                        ).toFixed(2)
+                        membresias.reduce(
+                          (sum, m) => sum + m.precio_pagado,
+                          0
+                        ) / membresias.length
+                      ).toFixed(2)
                       : "0.00"}
                   </span>
                 </div>
-                <div className="pt-4 border-t-2 border-gray-200">
+                <div className="pt-4 border-t-2 border-gray-200 dark:border-gray-700">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-900">
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                       Total del mes
                     </span>
-                    <span className="text-lg font-bold text-emerald-600">
+                    <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
                       ${stats.ingresosMes.toFixed(2)}
                     </span>
                   </div>
                 </div>
               </div>
             </div>
+
           </div>
-          
+
         </div>
       </div>
     </div>

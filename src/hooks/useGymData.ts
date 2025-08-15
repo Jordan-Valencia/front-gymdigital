@@ -232,7 +232,7 @@ export function useGymData() {
   // ---------------------
   // GASTOS
   // ---------------------
-  const agregarGasto = async (gasto: Omit<Gasto, "id">) => {
+  const agregarGasto = async (gasto: Omit<Gasto, "id" | "fecha_registro">) => {
     const res = await axios.post(`${API_URL}/gasto`, gasto);
     setGastos((prev) => [...prev, res.data]);
     return res.data;
