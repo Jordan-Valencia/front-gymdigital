@@ -4,7 +4,7 @@ export interface Usuario {
   nombre: string;
   telefono: string;
   email: string;
-  fecha_nacimiento: string;
+  documento: string;
   fecha_registro: string;
   activo: boolean;
   notas?: string;
@@ -15,6 +15,7 @@ export interface Plan {
   nombre: string;
   descripcion: string;
   precio: number;
+  duracion_dias: number;
 }
 
 export interface Membresia {
@@ -96,19 +97,11 @@ export interface Entrenador {
   telefono: string;
   email: string;
   especialidad?: string;
-  tarifa_hora: number;
+  tarifa_mensual: number;
   fecha_registro: string;
   activo: boolean;
-}
-
-export interface HoraTrabajada {
-  id: string;
-  entrenador_id: string;
-  fecha: string;
-  horas: number;
-  descripcion?: string;
-  fecha_registro: string;
-  entrenador?: Entrenador;
+  fecha_primer_pago?: string;
+  fecha_ultimo_pago?: string;
 }
 
 export interface Gasto {

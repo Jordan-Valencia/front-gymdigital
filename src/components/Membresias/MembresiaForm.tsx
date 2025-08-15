@@ -1,3 +1,4 @@
+"use client"
 
 import type React from "react"
 import { useState, useEffect } from "react"
@@ -49,15 +50,49 @@ export function MembresiaForm({ membresia, onClose, onSave }: MembresiaFormProps
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
+    console.log("[v0] Datos del formulario:", formData)
+    console.log("[v0] Usuarios disponibles:", usuarios.length)
+    console.log("[v0] Planes disponibles:", planes.length)
+
+    if (!formData.usuario_id || !formData.plan_id) {
+      alert("Por favor selecciona un usuario y un plan")
+      return
+    }
+
+    // Verificar que el usuario y plan existen
+    const usuarioExiste = usuarios.find((u) => u.id === formData.usuario_id)
+    const planExiste = planes.find((p) => p.id === formData.plan_id)
+
+    if (!usuarioExiste) {
+      alert("El usuario seleccionado no es válido")
+      return
+    }
+
+    if (!planExiste) {
+      alert("El plan seleccionado no es válido")
+      return
+    }
+
     const dataToSubmit: Omit<Membresia, "id" | "fecha_registro" | "usuario" | "plan"> = {
       usuario_id: formData.usuario_id,
       plan_id: formData.plan_id,
-      fecha_inicio: new Date(formData.fecha_inicio).toISOString(),
-      fecha_fin: new Date(formData.fecha_fin).toISOString(),
-      precio_pagado: formData.precio_pagado,
+      fecha_inicio: formData.fecha_inicio, // Ya está en formato YYYY-MM-DD
+      fecha_fin: formData.fecha_fin, // Ya está en formato YYYY-MM-DD
+      precio_pagado: Number(formData.precio_pagado),
       metodo_pago: formData.metodo_pago,
-      fecha_pago: new Date(formData.fecha_pago).toISOString(),
+      fecha_pago: formData.fecha_pago, // Ya está en formato YYYY-MM-DD
     }
+
+    console.log("[v0] Datos a enviar:", dataToSubmit)
+    console.log("[v0] Tipos de datos:", {
+      usuario_id: typeof dataToSubmit.usuario_id,
+      plan_id: typeof dataToSubmit.plan_id,
+      fecha_inicio: typeof dataToSubmit.fecha_inicio,
+      fecha_fin: typeof dataToSubmit.fecha_fin,
+      precio_pagado: typeof dataToSubmit.precio_pagado,
+      metodo_pago: typeof dataToSubmit.metodo_pago,
+      fecha_pago: typeof dataToSubmit.fecha_pago,
+    })
 
     if (membresia) {
       actualizarMembresia(membresia.id, dataToSubmit)
@@ -144,6 +179,11 @@ export function MembresiaForm({ membresia, onClose, onSave }: MembresiaFormProps
             <label htmlFor="usuario_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Miembro
             </label>
+            {usuarios.length === 0 && (
+              <p className="text-sm text-yellow-600 dark:text-yellow-400 mb-2">
+                No hay usuarios disponibles. Crea un usuario primero.
+              </p>
+            )}
             <select
               id="usuario_id"
               name="usuario_id"
@@ -167,6 +207,11 @@ export function MembresiaForm({ membresia, onClose, onSave }: MembresiaFormProps
             <label htmlFor="plan_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Plan
             </label>
+            {planes.length === 0 && (
+              <p className="text-sm text-yellow-600 dark:text-yellow-400 mb-2">
+                No hay planes disponibles. Crea un plan primero.
+              </p>
+            )}
             <select
               id="plan_id"
               name="plan_id"
@@ -215,7 +260,6 @@ export function MembresiaForm({ membresia, onClose, onSave }: MembresiaFormProps
                 value={formData.fecha_fin}
                 onChange={handleChange}
                 required
-                disabled
                 className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-600 
                   rounded-lg cursor-not-allowed text-gray-500 dark:text-gray-400"
               />

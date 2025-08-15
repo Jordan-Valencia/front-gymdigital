@@ -20,7 +20,7 @@ export function UsuarioForm({ usuario, onClose, onSave }: UsuarioFormProps) {
     nombre: "",
     telefono: "",
     email: "",
-    fecha_nacimiento: "",
+    documento: "",
     activo: true,
     notas: "",
   })
@@ -31,7 +31,7 @@ export function UsuarioForm({ usuario, onClose, onSave }: UsuarioFormProps) {
         nombre: usuario.nombre,
         telefono: usuario.telefono,
         email: usuario.email,
-        fecha_nacimiento: usuario.fecha_nacimiento,
+        documento: usuario.documento,
         activo: usuario.activo,
         notas: usuario.notas || "",
       })
@@ -119,12 +119,12 @@ export function UsuarioForm({ usuario, onClose, onSave }: UsuarioFormProps) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Fecha de nacimiento *
+              Documento *
             </label>
             <input
-              type="date"
-              name="fecha_nacimiento"
-              value={formData.fecha_nacimiento}
+              type="number"
+              name="documento"
+              value={formData.documento}
               onChange={handleChange}
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:placeholder-gray-400"

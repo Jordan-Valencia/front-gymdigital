@@ -1,3 +1,7 @@
+"use client"
+
+import type React from "react"
+
 import { useState, useEffect } from "react"
 import { X, Save, Plus, Minus, AlertTriangle } from "lucide-react"
 import { useGymData } from "../../hooks/useGymData"
@@ -86,6 +90,11 @@ export function InventarioForm({ item, onClose, onSave, tipo }: InventarioFormPr
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
+    if (!formData.categoria_id) {
+      alert("Por favor selecciona una categoría")
+      return
+    }
+
     let dataToSubmit: InventarioBase | InventarioNuevo = {
       nombre: formData.nombre,
       descripcion: formData.descripcion || undefined,
@@ -168,16 +177,25 @@ export function InventarioForm({ item, onClose, onSave, tipo }: InventarioFormPr
             />
           </div>
 
-          {filteredCategorias.length > 0 && (
+          {filteredCategorias.length === 0 ? (
+            <div
+              className="p-3 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300 
+              text-sm rounded-lg border border-yellow-200 dark:border-yellow-800"
+            >
+              <p className="font-medium">No hay categorías disponibles para {tipo}s</p>
+              <p>Crea una categoría de tipo "{tipo}" primero en la sección de Inventario.</p>
+            </div>
+          ) : (
             <div>
               <label htmlFor="categoria_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Categoría
+                Categoría *
               </label>
               <select
                 id="categoria_id"
                 name="categoria_id"
                 value={formData.categoria_id}
                 onChange={handleChange}
+                required
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
                   bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
                   focus:ring-2 focus:ring-blue-500 focus:border-transparent"

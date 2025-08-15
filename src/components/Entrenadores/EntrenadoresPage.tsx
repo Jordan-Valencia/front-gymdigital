@@ -1,3 +1,5 @@
+"use client"
+
 import type React from "react"
 import { useState } from "react"
 import { Plus, Search, User, Phone, Mail, DollarSign, Edit2, Trash2, Calendar, Star } from "lucide-react"
@@ -14,7 +16,7 @@ export function EntrenadoresPage() {
     telefono: "",
     email: "",
     especialidad: "",
-    tarifa_hora: 0,
+    tarifa_mensual: 0, // Cambiado de tarifa_hora a tarifa_mensual
     activo: true,
   })
 
@@ -50,7 +52,7 @@ export function EntrenadoresPage() {
       telefono: "",
       email: "",
       especialidad: "",
-      tarifa_hora: 0,
+      tarifa_mensual: 0, // Cambiado de tarifa_hora a tarifa_mensual
       activo: true,
     })
     setEditingEntrenador(null)
@@ -63,7 +65,7 @@ export function EntrenadoresPage() {
       telefono: entrenador.telefono,
       email: entrenador.email,
       especialidad: entrenador.especialidad || "",
-      tarifa_hora: entrenador.tarifa_hora,
+      tarifa_mensual: entrenador.tarifa_mensual, // Cambiado de tarifa_hora a tarifa_mensual
       activo: entrenador.activo,
     })
     setShowForm(true)
@@ -79,24 +81,6 @@ export function EntrenadoresPage() {
     <div className="p-6 ml-20">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4 md:mb-0">Gestión de Entrenadores</h1>
-        <button
-          onClick={() => {
-            setShowForm(true)
-            setEditingEntrenador(null)
-            setFormData({
-              nombre: "",
-              telefono: "",
-              email: "",
-              especialidad: "",
-              tarifa_hora: 0,
-              activo: true,
-            })
-          }}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors"
-        >
-          <Plus size={18} />
-          <span>Nuevo Entrenador</span>
-        </button>
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6">
@@ -169,12 +153,12 @@ export function EntrenadoresPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Tarifa por Hora ($)
+                    Tarifa Mensual ($)
                   </label>
                   <input
                     type="number"
-                    name="tarifa_hora"
-                    value={formData.tarifa_hora}
+                    name="tarifa_mensual"
+                    value={formData.tarifa_mensual}
                     onChange={handleInputChange}
                     min="0"
                     step="0.01"
@@ -266,7 +250,7 @@ export function EntrenadoresPage() {
                     </div>
                     <div className="flex items-center">
                       <DollarSign className="w-4 h-4 text-gray-400 dark:text-gray-500 mr-2" />
-                      <span>${entrenador.tarifa_hora.toFixed(2)}/hora</span>
+                      <span>${entrenador.tarifa_mensual.toFixed(2)}/mes</span>
                     </div>
                     <div className="flex items-center text-xs text-gray-400 dark:text-gray-500">
                       <Calendar className="w-3.5 h-3.5 mr-1.5" />

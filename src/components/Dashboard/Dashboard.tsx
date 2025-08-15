@@ -74,15 +74,13 @@ export function Dashboard() {
               title="Miembros Activos"
               value={stats.miembrosActivos}
               icon={Users}
-              color="indigo"
-              trend={{ value: 12, isPositive: true }}
+              color="violet"
             />
             <StatsCard
               title="Ingresos del Mes"
               value={`$${stats.ingresosMes.toFixed(2)}`}
               icon={DollarSign}
               color="emerald"
-              trend={{ value: 8, isPositive: true }}
             />
             <StatsCard
               title="Ventas Hoy"

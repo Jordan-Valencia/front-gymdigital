@@ -16,13 +16,20 @@ export function VentasPage() {
   const [busqueda, setBusqueda] = useState("")
   const [categoriaFiltro, setCategoriaFiltro] = useState("todos")
 
-  const productosFiltrados = inventario.filter(
-    (producto) =>
-      producto.nombre.toLowerCase().includes(busqueda.toLowerCase()) &&
-      (categoriaFiltro === "todos" || producto.categoria_id === categoriaFiltro),
-  )
+  const categoriasProductos = categorias.filter(categoria => categoria.tipo === "producto");
 
-  const categoriasUnicas = ["todos", ...new Set(categorias.map((c) => c.id))]
+  const productosFiltrados = inventario.filter((producto) => {
+    const categoria = categorias.find((c) => c.id === producto.categoria_id)
+    const esProducto = categoria && categoria.tipo === "producto"
+
+    return (
+      esProducto &&
+      producto.nombre.toLowerCase().includes(busqueda.toLowerCase()) &&
+      (categoriaFiltro === "todos" || producto.categoria_id === categoriaFiltro)
+    )
+  })
+
+  const categoriasUnicas = ["todos", ...new Set(categoriasProductos.map((c) => c.id))]
   const totalCarrito = carrito.reduce((total, item) => {
     return total + (item.producto.precio_unitario || 0) * item.cantidad
   }, 0)
@@ -98,7 +105,7 @@ export function VentasPage() {
                 )
               }
 
-              const categoria = categorias.find((c) => c.id === catId)
+              const categoria = categoriasProductos.find((c) => c.id === catId)
               if (!categoria) return null
 
               return (

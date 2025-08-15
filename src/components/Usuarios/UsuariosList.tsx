@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Plus, Search, Edit2, Trash2, Phone, Mail, Calendar } from "lucide-react"
 import { useGymData } from "../../hooks/useGymData"
-import { useToast } from "../../contexts/ToastContext" 
+import { useToast } from "../../contexts/ToastContext"
 import type { Usuario } from "../../types"
 
 interface UsuariosListProps {
@@ -18,7 +18,8 @@ export function UsuariosList({ onAddUser, onEditUser }: UsuariosListProps) {
     (usuario) =>
       usuario.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
       usuario.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      usuario.telefono.includes(searchTerm),
+      usuario.telefono.includes(searchTerm) ||
+      usuario.documento.includes(searchTerm)
   )
 
   const handleEliminar = async (id: string) => {
@@ -126,9 +127,8 @@ export function UsuariosList({ onAddUser, onEditUser }: UsuariosListProps) {
                 </div>
 
                 <div className="flex items-center gap-2 py-1.5 text-sm">
-                  <Calendar size={16} className="text-blue-500" />
                   <span className="text-gray-600 dark:text-gray-400">
-                    {new Date(usuario.fecha_nacimiento).toLocaleDateString("es-ES")}
+                    {usuario.documento}
                   </span>
                 </div>
               </div>

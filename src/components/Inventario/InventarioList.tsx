@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Plus,
   Search,
@@ -18,66 +18,79 @@ import {
   Beef,
 } from "lucide-react"
 import { useGymData } from "../../hooks/useGymData"
+import { useToast } from "../../contexts/ToastContext"
 import { InventarioForm } from "./InventarioForm"
 import type { ItemInventario, CategoriaInventario } from "../../types"
 
-export function InventarioList() {
+interface InventarioListProps {
+  refreshKey: number
+}
+
+export function InventarioList({ refreshKey }: InventarioListProps) {
   const { inventario, productos, categorias, agregarItemInventario, actualizarItemInventario, eliminarItemInventario } =
     useGymData()
+  const { showToast } = useToast()
   const [searchTerm, setSearchTerm] = useState("")
   const [filtroTipo, setFiltroTipo] = useState<"todos" | "implemento" | "producto">("todos")
   const [isFormOpen, setIsFormOpen] = useState(false)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [selectedItem, setSelectedItem] = useState<any>(null)
+  const [selectedItem, setSelectedItem] = useState<ItemInventario | undefined>(undefined)
   const [itemTipo, setItemTipo] = useState<"implemento" | "producto">("implemento")
+
+  useEffect(() => {
+    // Los datos se refrescan automáticamente
+  }, [refreshKey])
 
   const handleAddItem = (tipo: "implemento" | "producto") => {
     setItemTipo(tipo)
-    setSelectedItem(null)
-    setIsFormOpen(true)
-  }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleEditItem = (item: any) => {
-    setSelectedItem(item)
-    setItemTipo(item.tipo)
+    setSelectedItem(undefined)
     setIsFormOpen(true)
   }
 
-  const handleSaveItem = (
+  const handleEditItem = (item: ItemInventario) => {
+    setSelectedItem(item)
+    const categoria = categorias.find((c) => c.id === item.categoria_id)
+    setItemTipo(categoria?.tipo || "implemento")
+    setIsFormOpen(true)
+  }
+
+  const handleSaveItem = async (
     itemData: Omit<ItemInventario, "id" | "fecha_registro" | "categoria"> & {
       categoria_id: string
     },
   ) => {
-    if (selectedItem) {
-      actualizarItemInventario(selectedItem.id, itemData)
-    } else {
-      agregarItemInventario(itemData)
-    }
-    setIsFormOpen(false)
-  }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleDeleteItem = (item: any) => {
-    if (window.confirm(`¿Estás seguro de eliminar ${item.nombre}?`)) {
-      eliminarItemInventario(item.id)
+    try {
+      if (selectedItem) {
+        await actualizarItemInventario(selectedItem.id, itemData)
+        showToast("Item actualizado exitosamente", "success")
+      } else {
+        await agregarItemInventario(itemData)
+        showToast("Item creado exitosamente", "success")
+      }
+      setIsFormOpen(false)
+    } catch (error) {
+      showToast("Error al guardar el item", "error")
     }
   }
 
-  // Combinar inventario y productos para mostrar todo junto
-  const todosLosItems = [
-    ...inventario.map((item) => ({ ...item, tipo: "implemento" as const })),
-    ...productos.map((item) => ({
-      ...item,
-      tipo: "producto" as const,
-      precio_unitario: item.precio_venta,
-    })),
-  ]
+  const handleDeleteItem = async (item: ItemInventario) => {
+    if (window.confirm(`¿Estás seguro de eliminar ${item.nombre}?`)) {
+      try {
+        await eliminarItemInventario(item.id)
+        showToast("Item eliminado exitosamente", "success")
+      } catch (error) {
+        showToast("Error al eliminar el item", "error")
+      }
+    }
+  }
+
+  const todosLosItems = inventario
 
   const itemsFiltrados = todosLosItems.filter((item) => {
     const categoria = categorias.find((c) => c.id === item.categoria_id)
     const matchSearch =
       item.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
       categoria?.nombre.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchTipo = filtroTipo === "todos" || item.tipo === filtroTipo
+    const matchTipo = filtroTipo === "todos" || categoria?.tipo === filtroTipo
 
     return matchSearch && matchTipo
   })
@@ -85,7 +98,6 @@ export function InventarioList() {
   const itemsStockBajo = itemsFiltrados.filter((item) => item.cantidad <= item.stock_minimo)
 
   const getItemIcon = (tipo: string, nombre: string) => {
-    // Iconos para productos
     if (tipo === "producto") {
       const nombreLower = nombre.toLowerCase()
       if (nombreLower.includes("proteina") || nombreLower.includes("suplemento")) {
@@ -108,7 +120,6 @@ export function InventarioList() {
       }
       return <ShoppingBag className="text-white" size={16} />
     }
-    // Iconos para implementos
     if (nombre.toLowerCase().includes("mancuerna") || nombre.toLowerCase().includes("pesa")) {
       return <Dumbbell className="text-white" size={16} />
     }
@@ -117,7 +128,6 @@ export function InventarioList() {
 
   return (
     <div className="ml-20">
-      {/* Header con filtros */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex flex-col sm:flex-row gap-4 flex-1">
           <div className="relative flex-1 max-w-md">
@@ -138,8 +148,7 @@ export function InventarioList() {
           </div>
           <select
             value={filtroTipo}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            onChange={(e) => setFiltroTipo(e.target.value as any)}
+            onChange={(e) => setFiltroTipo(e.target.value as "todos" | "implemento" | "producto")}
             className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
               bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
               focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -159,7 +168,7 @@ export function InventarioList() {
             <span>Agregar Item</span>
           </button>
           <div
-            className="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-10 
+            className="absolute right-0 mt-0 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-10 
             hidden group-hover:block border border-gray-200 dark:border-gray-700"
           >
             <button
@@ -190,7 +199,6 @@ export function InventarioList() {
         </div>
       </div>
 
-      {/* Alerta de stock bajo */}
       {itemsStockBajo.length > 0 && (
         <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-4">
           <div className="flex items-center space-x-2 mb-2">
@@ -203,7 +211,6 @@ export function InventarioList() {
         </div>
       )}
 
-      {/* Lista de items */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {itemsFiltrados.map((item) => {
           const categoria = categorias.find((c: CategoriaInventario) => c.id === item.categoria_id)
@@ -211,7 +218,7 @@ export function InventarioList() {
 
           return (
             <div
-              key={`${item.tipo}-${item.id}`}
+              key={item.id}
               className="group bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-100 dark:border-gray-700
                 overflow-hidden transition-all duration-200
                 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-600"
@@ -221,12 +228,12 @@ export function InventarioList() {
                   <div
                     className={`w-8 h-8 rounded-md flex items-center justify-center
                     group-hover:scale-105 transition-all duration-200 ${
-                      item.tipo === "producto"
+                      categoria?.tipo === "producto"
                         ? "bg-gradient-to-br from-emerald-500 to-green-600"
                         : "bg-gradient-to-br from-blue-500 to-indigo-600"
                     }`}
                   >
-                    {getItemIcon(item.tipo, item.nombre)}
+                    {getItemIcon(categoria?.tipo || "implemento", item.nombre)}
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 leading-tight">
@@ -234,7 +241,7 @@ export function InventarioList() {
                     </h3>
                     <span
                       className={`inline-flex items-center px-2 py-0.5 text-xs rounded-full ${
-                        item.tipo === "producto"
+                        categoria?.tipo === "producto"
                           ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400"
                           : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
                       }`}
@@ -311,7 +318,6 @@ export function InventarioList() {
         </div>
       )}
 
-      {/* Formulario de inventario */}
       {isFormOpen && (
         <InventarioForm
           item={selectedItem}
