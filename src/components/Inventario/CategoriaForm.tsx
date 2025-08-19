@@ -16,7 +16,7 @@ export function CategoriaForm({ categoria, onClose, onSave }: CategoriaFormProps
   const [formData, setFormData] = useState({
     nombre: categoria?.nombre || "",
     descripcion: categoria?.descripcion || "",
-    tipo: categoria?.tipo || ("implemento" as "implemento" | "producto"),
+    tipo: categoria?.tipo || ("IMPLEMENTO" as "IMPLEMENTO" | "PRODUCTO"),
   })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -90,8 +90,8 @@ export function CategoriaForm({ categoria, onClose, onSave }: CategoriaFormProps
                 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
                 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              <option value="implemento">Implemento</option>
-              <option value="producto">Producto</option>
+              <option value="IMPLEMENTO">Implemento</option>
+              <option value="PRODUCTO">Producto</option>
             </select>
           </div>
 

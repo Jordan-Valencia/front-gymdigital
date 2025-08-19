@@ -6,14 +6,24 @@ import {
   UserCheck,
   Calendar,
   AlertTriangle,
+  TrendingUp,
+  TrendingDown,
+  CreditCard,
+  Receipt,
 } from "lucide-react";
 import { StatsCard } from "./StatsCard";
 import { useGymData } from "../../hooks/useGymData";
+import { useFinanzas } from "../../hooks/useFinanzas";
 import { DashboardStats } from "../../types";
 
 export function Dashboard() {
-  const { getDashboardStats, usuarios, eventos, membresias, planes } =
-    useGymData();
+  const { getDashboardStats, usuarios, eventos, membresias, planes } = useGymData();
+  const { 
+    obtenerEstadisticasDashboard, 
+    obtenerMembresiasVencidas, 
+    obtenerGastosPendientes,
+    obtenerNominasPendientes 
+  } = useFinanzas();
 
   // Estado para las estadísticas del dashboard
   const [stats, setStats] = useState({
@@ -25,12 +35,59 @@ export function Dashboard() {
     inventarioBajo: 0,
   });
 
+  // Estado para estadísticas financieras
+  const [statsFinancieras, setStatsFinancieras] = useState({
+    ingresosMes: 0,
+    gastosMes: 0,
+    utilidadMes: 0,
+    membresiasVencidas: 0,
+    gastosPendientes: 0,
+    nominaPendiente: 0,
+    crecimientoMensual: 0
+  });
+
   // Cargar estadísticas al montar el componente
   useEffect(() => {
     getDashboardStats().then((data: DashboardStats | null) => {
       if (data) setStats(data);
     });
+
+    // Cargar estadísticas financieras
+    cargarEstadisticasFinancieras();
   }, []);
+
+  const cargarEstadisticasFinancieras = async () => {
+    try {
+      const [dashboardStats, vencidas, gastosPend, nominaPend] = await Promise.all([
+        obtenerEstadisticasDashboard(),
+        obtenerMembresiasVencidas(),
+        obtenerGastosPendientes(),
+        obtenerNominasPendientes()
+      ]);
+
+      if (dashboardStats) {
+        setStatsFinancieras({
+          ingresosMes: dashboardStats.mesActual?.ingresos?.total || 0,
+          gastosMes: dashboardStats.mesActual?.gastos?.total || 0,
+          utilidadMes: dashboardStats.mesActual?.utilidadNeta || 0,
+          membresiasVencidas: vencidas?.length || 0,
+          gastosPendientes: gastosPend?.length || 0,
+          nominaPendiente: nominaPend?.reduce((sum: number, n: any) => sum + n.total_pagar, 0) || 0,
+          crecimientoMensual: dashboardStats.crecimiento?.ingresos || 0
+        });
+      }
+    } catch (error) {
+      console.error("Error cargando estadísticas financieras:", error);
+    }
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("es-CO", {
+      style: "currency",
+      currency: "COP",
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
 
   const proximosEventos = eventos
     .filter((e) => new Date(e.fecha_inicio) > new Date())
@@ -78,7 +135,7 @@ export function Dashboard() {
             />
             <StatsCard
               title="Ingresos del Mes"
-              value={`$${stats.ingresosMes.toFixed(2)}`}
+              value={formatCurrency(statsFinancieras.ingresosMes)}
               icon={DollarSign}
               color="emerald"
             />
@@ -108,55 +165,158 @@ export function Dashboard() {
             />
           </div>
 
-          {/* Alertas importantes */}
-          {membresiasPorVencer.length > 0 && (
-            <div className="backdrop-blur-xl bg-gradient-to-r from-amber-50/90 to-orange-50/90 dark:from-amber-900/50 dark:to-orange-900/50 border-l-4 border-amber-400 dark:border-amber-600 rounded-xl p-6 shadow-lg animate-pulse-slow hover:shadow-xl transition-all duration-300 group">
-              <div className="flex items-center space-x-2 mb-3">
-                <AlertTriangle
-                  className="text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform"
-                  size={20}
-                />
-                <h3 className="font-semibold text-amber-800 dark:text-amber-300">
-                  Membresías por vencer
-                </h3>
-              </div>
-              <div className="space-y-2">
-                {membresiasPorVencer.map((membresia) => {
-                  const diasRestantes = Math.ceil(
-                    (new Date(membresia.fecha_fin).getTime() -
-                      new Date().getTime()) /
-                    (1000 * 60 * 60 * 24)
-                  );
-                  return (
-                    <div
-                      key={membresia.id}
-                      className="flex items-center justify-between text-sm"
-                    >
-                      <span className="text-amber-800 dark:text-amber-300">
-                        {membresia.usuario?.nombre} - {membresia.plan?.nombre}
-                      </span>
-                      <span className="text-amber-600 dark:text-amber-400 font-medium">
-                        {diasRestantes === 0
-                          ? "Vence hoy"
-                          : `${diasRestantes} días`}
-                      </span>
-                    </div>
-                  );
-                })}
+          {/* Resumen Financiero Rápido */}
+          <div className="backdrop-blur-xl bg-gradient-to-r from-blue-50/90 to-indigo-50/90 dark:from-blue-900/50 dark:to-indigo-900/50 border border-blue-200/50 dark:border-blue-700/50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100 flex items-center gap-2">
+                <TrendingUp className="text-blue-600 dark:text-blue-400" size={24} />
+                Resumen Financiero del Mes
+              </h3>
+              <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${
+                statsFinancieras.crecimientoMensual >= 0 
+                  ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                  : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+              }`}>
+                {statsFinancieras.crecimientoMensual >= 0 ? (
+                  <TrendingUp size={16} />
+                ) : (
+                  <TrendingDown size={16} />
+                )}
+                {statsFinancieras.crecimientoMensual >= 0 ? '+' : ''}{statsFinancieras.crecimientoMensual.toFixed(1)}%
               </div>
             </div>
-          )}
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-4 border border-green-200/50 dark:border-green-700/50">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-green-700 dark:text-green-300 font-medium">Ingresos</p>
+                    <p className="text-xl font-bold text-green-800 dark:text-green-200">
+                      {formatCurrency(statsFinancieras.ingresosMes)}
+                    </p>
+                  </div>
+                  <DollarSign className="text-green-600 dark:text-green-400" size={24} />
+                </div>
+              </div>
+              
+              <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-4 border border-red-200/50 dark:border-red-700/50">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-red-700 dark:text-red-300 font-medium">Gastos</p>
+                    <p className="text-xl font-bold text-red-800 dark:text-red-200">
+                      {formatCurrency(statsFinancieras.gastosMes)}
+                    </p>
+                  </div>
+                  <Receipt className="text-red-600 dark:text-red-400" size={24} />
+                </div>
+              </div>
+              
+              <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-4 border border-blue-200/50 dark:border-blue-700/50">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">Utilidad</p>
+                    <p className={`text-xl font-bold ${
+                      statsFinancieras.utilidadMes >= 0 
+                        ? 'text-blue-800 dark:text-blue-200' 
+                        : 'text-red-800 dark:text-red-200'
+                    }`}>
+                      {formatCurrency(statsFinancieras.utilidadMes)}
+                    </p>
+                  </div>
+                  {statsFinancieras.utilidadMes >= 0 ? (
+                    <TrendingUp className="text-blue-600 dark:text-blue-400" size={24} />
+                  ) : (
+                    <TrendingDown className="text-red-600 dark:text-red-400" size={24} />
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Alertas importantes - Financieras y Operativas */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Alertas Financieras */}
+            {(statsFinancieras.membresiasVencidas > 0 || statsFinancieras.gastosPendientes > 0 || statsFinancieras.nominaPendiente > 0) && (
+              <div className="backdrop-blur-xl bg-gradient-to-r from-red-50/90 to-rose-50/90 dark:from-red-900/50 dark:to-rose-900/50 border-l-4 border-red-400 dark:border-red-600 rounded-xl p-6 shadow-lg animate-pulse-slow hover:shadow-xl transition-all duration-300">
+                <div className="flex items-center space-x-2 mb-3">
+                  <CreditCard className="text-red-600 dark:text-red-400" size={20} />
+                  <h3 className="font-semibold text-red-800 dark:text-red-300">
+                    Alertas Financieras
+                  </h3>
+                </div>
+                <div className="space-y-2 text-sm">
+                  {statsFinancieras.membresiasVencidas > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-red-700 dark:text-red-300">Membresías vencidas:</span>
+                      <span className="font-bold text-red-800 dark:text-red-200">{statsFinancieras.membresiasVencidas}</span>
+                    </div>
+                  )}
+                  {statsFinancieras.gastosPendientes > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-red-700 dark:text-red-300">Gastos pendientes:</span>
+                      <span className="font-bold text-red-800 dark:text-red-200">{statsFinancieras.gastosPendientes}</span>
+                    </div>
+                  )}
+                  {statsFinancieras.nominaPendiente > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-red-700 dark:text-red-300">Nómina pendiente:</span>
+                      <span className="font-bold text-red-800 dark:text-red-200">{formatCurrency(statsFinancieras.nominaPendiente)}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Alertas Operativas */}
+            {membresiasPorVencer.length > 0 && (
+              <div className="backdrop-blur-xl bg-gradient-to-r from-amber-50/90 to-orange-50/90 dark:from-amber-900/50 dark:to-orange-900/50 border-l-4 border-amber-400 dark:border-amber-600 rounded-xl p-6 shadow-lg animate-pulse-slow hover:shadow-xl transition-all duration-300 group">
+                <div className="flex items-center space-x-2 mb-3">
+                  <AlertTriangle
+                    className="text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform"
+                    size={20}
+                  />
+                  <h3 className="font-semibold text-amber-800 dark:text-amber-300">
+                    Membresías por vencer
+                  </h3>
+                </div>
+                <div className="space-y-2">
+                  {membresiasPorVencer.map((membresia) => {
+                    const diasRestantes = Math.ceil(
+                      (new Date(membresia.fecha_fin).getTime() -
+                        new Date().getTime()) /
+                      (1000 * 60 * 60 * 24)
+                    );
+                    return (
+                      <div
+                        key={membresia.id}
+                        className="flex items-center justify-between text-sm"
+                      >
+                        <span className="text-amber-800 dark:text-amber-300">
+                          {membresia.usuario?.nombre} - {membresia.plan?.nombre}
+                        </span>
+                        <span className="text-amber-600 dark:text-amber-400 font-medium">
+                          {diasRestantes === 0
+                            ? "Vence hoy"
+                            : `${diasRestantes} días`}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Sección de información adicional */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Próximos Eventos */}
             <div className="backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 rounded-xl p-5 shadow-lg border border-sky-100/50 dark:border-sky-900/50 hover:border-sky-200 dark:hover:border-sky-700 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group animate-fadeIn">
-              <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                 <Calendar
                   className="text-sky-600 dark:text-sky-400 group-hover:rotate-12 transition-transform"
                   size={18}
                 />
-                <span>Próximos Eventos</span>
+                <span className="text-sky-600 dark:text-sky-400">Eventos Próximos</span>
               </h3>
               <div className="space-y-2">
                 {proximosEventos.length > 0 ? (
@@ -255,73 +415,61 @@ export function Dashboard() {
               </div>
             </div>
 
-            {/* Resumen Financiero */}
-            <div className="backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 rounded-xl p-5 shadow-lg 
-                border border-violet-100/50 dark:border-violet-900/50 
-                hover:border-violet-200 dark:hover:border-violet-800
-                transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group animate-fadeIn delay-200">
+            {/* Panel de Estado Financiero Rápido */}
+            <div className="backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 rounded-xl p-5 shadow-lg border border-purple-100/50 dark:border-purple-900/50 hover:border-purple-200 dark:hover:border-purple-700 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group animate-fadeIn delay-200">
               <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-                <DollarSign
-                  className="text-violet-600 dark:text-violet-400 group-hover:rotate-12 transition-transform"
+                <CreditCard
+                  className="text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform"
                   size={18}
                 />
-                <span>Resumen Financiero</span>
+                <span>Estado Financiero</span>
               </h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    Ingresos por membresías
-                  </span>
-                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                    $
-                    {membresias
-                      .reduce((sum, m) => sum + m.precio_pagado, 0)
-                      .toFixed(2)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    Membresías activas
-                  </span>
-                  <span className="font-semibold text-indigo-600 dark:text-indigo-400">
-                    {
-                      membresias.filter(
-                        (m) => new Date(m.fecha_fin) > new Date()
-                      ).length
-                    }
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    Promedio por membresía
-                  </span>
-                  <span className="font-semibold text-gray-900 dark:text-gray-100">
-                    $
-                    {membresias.length > 0
-                      ? (
-                        membresias.reduce(
-                          (sum, m) => sum + m.precio_pagado,
-                          0
-                        ) / membresias.length
-                      ).toFixed(2)
-                      : "0.00"}
-                  </span>
-                </div>
-                <div className="pt-4 border-t-2 border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      Total del mes
+              <div className="space-y-3">
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Margen de utilidad:</span>
+                    <span className={`text-sm font-bold ${
+                      statsFinancieras.ingresosMes > 0 && (statsFinancieras.utilidadMes / statsFinancieras.ingresosMes) * 100 >= 20
+                        ? 'text-green-600 dark:text-green-400'
+                        : 'text-orange-600 dark:text-orange-400'
+                    }`}>
+                      {statsFinancieras.ingresosMes > 0 
+                        ? `${((statsFinancieras.utilidadMes / statsFinancieras.ingresosMes) * 100).toFixed(1)}%`
+                        : '0%'
+                      }
                     </span>
-                    <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
-                      ${stats.ingresosMes.toFixed(2)}
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full transition-all duration-500 ${
+                        statsFinancieras.ingresosMes > 0 && (statsFinancieras.utilidadMes / statsFinancieras.ingresosMes) * 100 >= 20
+                          ? 'bg-green-500'
+                          : 'bg-orange-500'
+                      }`}
+                      style={{ 
+                        width: `${Math.min(100, Math.max(0, statsFinancieras.ingresosMes > 0 
+                          ? (statsFinancieras.utilidadMes / statsFinancieras.ingresosMes) * 100 
+                          : 0))}%` 
+                      }}
+                    ></div>
+                  </div>
+                </div>
+                
+                <div className="text-sm space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">Meta mensual:</span>
+                    <span className="font-medium text-gray-900 dark:text-gray-100">85%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">Días del mes:</span>
+                    <span className="font-medium text-gray-900 dark:text-gray-100">
+                      {new Date().getDate()}/{new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate()}
                     </span>
                   </div>
                 </div>
               </div>
             </div>
-
           </div>
-
         </div>
       </div>
     </div>

@@ -11,7 +11,7 @@ import type { ItemInventario, CategoriaInventario } from "../../types"
 type InventarioBase = Omit<ItemInventario, "id" | "fecha_registro" | "categoria" | "tipo"> & { categoria_id: string }
 
 // Tipo extendido con "tipo"
-type InventarioNuevo = InventarioBase & { tipo: "implemento" | "producto" }
+type InventarioNuevo = InventarioBase & { tipo: "IMPLEMENTO" | "PRODUCTO" }
 
 // Extend the base ItemInventario type for the form
 interface FormData {
@@ -35,7 +35,7 @@ export interface InventarioFormProps {
       categoria_id: string
     },
   ) => void
-  tipo: "implemento" | "producto"
+  tipo: "IMPLEMENTO" | "PRODUCTO"
 }
 
 export function InventarioForm({ item, onClose, onSave, tipo }: InventarioFormProps) {
@@ -127,7 +127,7 @@ export function InventarioForm({ item, onClose, onSave, tipo }: InventarioFormPr
         >
           <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
             {item ? "Editar " : "Nuevo "}
-            {tipo === "producto" ? "Producto" : "Implemento"}
+            {tipo === "PRODUCTO" ? "Producto" : "Implemento"}
           </h2>
           <button
             onClick={onClose}
@@ -142,7 +142,7 @@ export function InventarioForm({ item, onClose, onSave, tipo }: InventarioFormPr
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Nombre {tipo === "producto" ? "del producto" : "del implemento"}
+              Nombre {tipo === "PRODUCTO" ? "del producto" : "del implemento"}
             </label>
             <input
               type="text"
@@ -155,7 +155,7 @@ export function InventarioForm({ item, onClose, onSave, tipo }: InventarioFormPr
                 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
                 focus:ring-2 focus:ring-blue-500 focus:border-transparent
                 placeholder-gray-500 dark:placeholder-gray-400"
-              placeholder={`Ej: ${tipo === "producto" ? "Proteína en polvo" : "Mancuerna de 5kg"}`}
+              placeholder={`Ej: ${tipo === "PRODUCTO" ? "Proteína en polvo" : "Mancuerna de 5kg"}`}
             />
           </div>
 
@@ -282,7 +282,7 @@ export function InventarioForm({ item, onClose, onSave, tipo }: InventarioFormPr
             </div>
           </div>
 
-          {tipo === "producto" && (
+          {tipo === "PRODUCTO" && (
             <div>
               <label
                 htmlFor="precio_unitario"
@@ -410,7 +410,7 @@ export function InventarioForm({ item, onClose, onSave, tipo }: InventarioFormPr
                 flex items-center justify-center space-x-2"
             >
               <Save size={18} />
-              <span>{item ? "Guardar cambios" : "Agregar " + (tipo === "producto" ? "producto" : "implemento")}</span>
+              <span>{item ? "Guardar cambios" : "Agregar " + (tipo === "PRODUCTO" ? "producto" : "implemento")}</span>
             </button>
           </div>
         </form>

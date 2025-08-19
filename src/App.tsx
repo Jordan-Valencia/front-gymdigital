@@ -18,6 +18,9 @@ import { EntrenadoresPage } from "./components/Entrenadores/EntrenadoresPage"
 import { NotificacionesPanel } from "./components/Notificaciones/NotificacionesPanel"
 import { ToastProvider } from "./contexts/ToastContext"
 import type { Usuario, Gasto, Membresia, Plan } from "./types"
+import { TrelloMain } from "./components/Trello/TrelloMain"
+import { TrelloProvider } from "./contexts/TrelloContext"
+import { FinanzasMain } from "./components/Finanzas/FinanzasMain"
 
 export default function Home() {
   const [activeSection, setActiveSection] = useState("dashboard")
@@ -176,7 +179,11 @@ export default function Home() {
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Gestionar Planes de Membresía</h2>
                 </div>
               </div>
-              <PlanesList onAddPlan={handleAddPlan} onEditPlan={handleEditPlan} />
+              <PlanesList 
+                onAddPlan={handleAddPlan} 
+                onEditPlan={handleEditPlan} 
+                refreshKey={planesRefreshKey} 
+              />
             </div>
             {showPlanForm && (
               <PlanMembresiaForm
@@ -217,6 +224,18 @@ export default function Home() {
           </>
         )
 
+      case "finanzas":
+        return <FinanzasMain />
+
+      case "trello":
+        return (
+          <TrelloProvider>
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+              <TrelloMain />
+            </div>
+          </TrelloProvider>
+        )
+
       default:
         return (
           <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg text-center">
@@ -233,7 +252,10 @@ export default function Home() {
     <ToastProvider>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
         <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
-        <div className="flex-1 flex flex-col overflow-hidden ml-64">
+        <div
+          className="flex-1 flex flex-col overflow-hidden transition-all duration-300 ease-in-out"
+          style={{ marginLeft: "var(--sidebar-width, 256px)" }}
+        >
           <Header title={getSectionTitle(activeSection)} onNotificationsClick={() => setShowNotificaciones(true)} />
           <main className="flex-1 overflow-y-auto p-6 bg-gray-50 dark:bg-gray-900">{renderContent()}</main>
         </div>

@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { Plus, Search, Edit2, Trash2, Calendar, DollarSign, Tag } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Plus, Search, Edit2, Trash2, DollarSign, Tag } from "lucide-react"
 import { useGymData } from "../../hooks/useGymData"
 import { useToast } from "../../contexts/ToastContext"
 import type { Plan } from "../../types"
@@ -9,12 +9,18 @@ import type { Plan } from "../../types"
 interface PlanesListProps {
   onAddPlan: () => void
   onEditPlan: (plan: Plan) => void
+  refreshKey?: number
 }
 
-export function PlanesList({ onAddPlan, onEditPlan }: PlanesListProps) {
-  const { planes, eliminarPlan } = useGymData()
+export function PlanesList({ onAddPlan, onEditPlan, refreshKey }: PlanesListProps) {
+  const { planes, eliminarPlan, fetchAllData } = useGymData()
   const { showToast } = useToast()
   const [searchTerm, setSearchTerm] = useState("")
+
+  // Refrescar los planes cuando cambie el refreshKey
+  useEffect(() => {
+    fetchAllData()
+  }, [refreshKey])
 
   const handleDeletePlan = async (plan: Plan) => {
     if (window.confirm(`¿Estás seguro de eliminar el plan "${plan.nombre}"?`)) {
@@ -33,7 +39,7 @@ export function PlanesList({ onAddPlan, onEditPlan }: PlanesListProps) {
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-CO", {
-      style: "currency",
+      style: "decimal",
       currency: "COP",
       minimumFractionDigits: 0,
     }).format(amount)
@@ -117,12 +123,6 @@ export function PlanesList({ onAddPlan, onEditPlan }: PlanesListProps) {
                 <DollarSign className="text-gray-400 dark:text-gray-500" size={16} />
                 <span className="text-gray-600 dark:text-gray-400">
                   {formatCurrency(plan.precio)}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Calendar className="text-gray-400 dark:text-gray-500" size={16} />
-                <span className="text-gray-600 dark:text-gray-400">
-                  Duración: {plan.duracion_dias} días
                 </span>
               </div>
             </div>

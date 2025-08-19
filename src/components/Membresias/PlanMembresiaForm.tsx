@@ -1,27 +1,40 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { X, Save } from "lucide-react"
+import { useToast } from "../../contexts/ToastContext"
+import { useGymData } from "../../hooks/useGymData"
 import type { Plan } from "../../types"
 
 interface PlanMembresiaFormProps {
   plan?: Plan | null
   onClose: () => void
-  onSave: (planData: Omit<Plan, "id" | "fecha_registro">) => void
+  onSave?: () => void
 }
 
 export function PlanMembresiaForm({ plan, onClose, onSave }: PlanMembresiaFormProps) {
+  const { agregarPlan, actualizarPlan } = useGymData()
+  const { showToast } = useToast()
+
   const [formData, setFormData] = useState({
     nombre: plan?.nombre || "",
     descripcion: plan?.descripcion || "",
-    precio: plan?.precio || 0,
-    duracion_dias: plan?.duracion_dias || 30,
+    precio: plan?.precio || 0
   })
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target as HTMLInputElement
+  const [isSaving, setIsSaving] = useState(false)
+
+  useEffect(() => {
+    // Si el plan cambia (editar uno distinto), actualizar formulario
+    setFormData({
+      nombre: plan?.nombre || "",
+      descripcion: plan?.descripcion || "",
+      precio: plan?.precio || 0
+    })
+  }, [plan])
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target
 
     setFormData((prev) => ({
       ...prev,
@@ -29,9 +42,31 @@ export function PlanMembresiaForm({ plan, onClose, onSave }: PlanMembresiaFormPr
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    onSave(formData)
+    setIsSaving(true)
+
+    try {
+      if (plan) {
+        // Editar plan existente
+        await actualizarPlan(plan.id, formData)
+        showToast("Plan actualizado exitosamente", "success")
+      } else {
+        // Crear plan nuevo
+        await agregarPlan(formData)
+        showToast("Plan creado exitosamente", "success")
+      }
+      if (onSave) {
+        onSave()
+      } else {
+        onClose()
+      }
+    } catch (error) {
+      showToast("Error guardando el plan", "error")
+      console.error(error)
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return (
@@ -44,6 +79,7 @@ export function PlanMembresiaForm({ plan, onClose, onSave }: PlanMembresiaFormPr
           <button
             onClick={onClose}
             className="text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-300"
+            disabled={isSaving}
           >
             <X size={24} />
           </button>
@@ -51,36 +87,44 @@ export function PlanMembresiaForm({ plan, onClose, onSave }: PlanMembresiaFormPr
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre del Plan</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Nombre del Plan
+            </label>
             <input
               type="text"
               name="nombre"
               value={formData.nombre}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={isSaving}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                  bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
+                  focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Ej: Plan Básico"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Descripción</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Descripción
+            </label>
             <textarea
               name="descripcion"
               value={formData.descripcion}
               onChange={handleChange}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={isSaving}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                  bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
+                  focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Descripción del plan..."
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Precio ($)</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Precio Mensual($)
+            </label>
             <input
               type="number"
               name="precio"
@@ -89,25 +133,10 @@ export function PlanMembresiaForm({ plan, onClose, onSave }: PlanMembresiaFormPr
               min="0"
               step="0.01"
               required
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duración (días)</label>
-            <input
-              type="number"
-              name="duracion_dias"
-              value={formData.duracion_dias}
-              onChange={handleChange}
-              min="1"
-              required
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Ej: 30"
+              disabled={isSaving}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                  bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
+                  focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
@@ -115,17 +144,19 @@ export function PlanMembresiaForm({ plan, onClose, onSave }: PlanMembresiaFormPr
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 
-                text-gray-700 dark:text-gray-300 rounded-lg 
-                hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              disabled={isSaving}
+              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600
+                  text-gray-700 dark:text-gray-300 rounded-lg
+                  hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg 
-                hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors 
-                flex items-center justify-center space-x-2"
+              disabled={isSaving}
+              className="flex-1 px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg
+                  hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors
+                  flex items-center justify-center space-x-2"
             >
               <Save size={18} />
               <span>{plan ? "Guardar cambios" : "Crear plan"}</span>
