@@ -92,7 +92,7 @@ export function HorasList({ onEditHoras }: HorasListProps) {
 
               <div className="flex items-center gap-2 text-lg">
                 <Clock className="text-gray-400 dark:text-gray-500" size={18} />
-                <span>{horas.horas} horas</span>
+                <span className="text-gray-400 dark:text-gray-500">{horas.horas} horas</span>
               </div>
             </div>
           );

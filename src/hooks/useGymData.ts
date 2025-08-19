@@ -210,6 +210,7 @@ export function useGymData() {
   const agregarEntrenador = async (
     entrenador: Omit<Entrenador, "id" | "fecha_registro">
   ) => {
+    console.log(entrenador)
     const res = await axios.post(`${API_URL}/entrenador`, entrenador);
     setEntrenadores((prev) => [...prev, res.data]);
     return res.data;

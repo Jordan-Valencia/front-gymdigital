@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
-import { Plus, Search, User, Phone, Mail, DollarSign, Edit2, Trash2, Calendar, Star, TrendingUp, Clock } from "lucide-react"
+import { Plus, Search, User, Phone, Mail, DollarSign, Edit2, Calendar, Star, UserCheck, UserX, Eye, EyeOff } from "lucide-react"
 import { useGymData } from "../../hooks/useGymData"
 import { useFinanzas } from "../../hooks/useFinanzas"
 import type { Entrenador } from "../../types"
@@ -13,6 +13,7 @@ export function EntrenadoresPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [showForm, setShowForm] = useState(false)
   const [editingEntrenador, setEditingEntrenador] = useState<Entrenador | null>(null)
+  const [showInactivos, setShowInactivos] = useState(false)
   const [formData, setFormData] = useState<Omit<Entrenador, "id" | "fecha_registro">>({
     nombre: "",
     telefono: "",
@@ -22,7 +23,11 @@ export function EntrenadoresPage() {
     activo: true,
   })
 
-  const filteredEntrenadores = entrenadores.filter(
+  const entrenadoresToShow = entrenadores.filter(entrenador => 
+    showInactivos ? !entrenador.activo : entrenador.activo
+  )
+
+  const filteredEntrenadores = entrenadoresToShow.filter(
     (entrenador) =>
       entrenador.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
       entrenador.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -77,9 +82,30 @@ export function EntrenadoresPage() {
     setShowForm(true)
   }
 
-  const handleDelete = (id: string) => {
-    if (window.confirm("¿Estás seguro de que deseas eliminar este entrenador?")) {
-      eliminarEntrenador(id)
+  // Verificar si un entrenador tiene datos vinculados
+  const tieneVinculaciones = (entrenadorId: string) => {
+    const tieneNominas = nominas.some(n => n.entrenador_id === entrenadorId)
+    const tieneHoras = horasTrabajadas.some(h => h.entrenador_id === entrenadorId)
+    return tieneNominas || tieneHoras
+  }
+
+  const handleToggleStatus = (entrenador: Entrenador) => {
+    const nuevoEstado = !entrenador.activo
+    const accion = nuevoEstado ? "habilitar" : "deshabilitar"
+    
+    if (window.confirm(`¿Estás seguro de que deseas ${accion} a ${entrenador.nombre}?`)) {
+      actualizarEntrenador(entrenador.id, { ...entrenador, activo: nuevoEstado })
+    }
+  }
+
+  const handleDelete = (entrenador: Entrenador) => {
+    if (tieneVinculaciones(entrenador.id)) {
+      alert("No se puede eliminar este entrenador porque tiene datos vinculados (nóminas o horas registradas). Puedes deshabilitarlo en su lugar.")
+      return
+    }
+    
+    if (window.confirm("¿Estás seguro de que deseas eliminar este entrenador? Esta acción no se puede deshacer.")) {
+      eliminarEntrenador(entrenador.id)
     }
   }
 
@@ -119,25 +145,65 @@ export function EntrenadoresPage() {
     }).format(amount)
   }
 
+  const entrenadoresTotales = entrenadores.length
+  const entrenadoresActivos = entrenadores.filter(e => e.activo).length
+  const entrenadoresInactivos = entrenadoresTotales - entrenadoresActivos
+
   return (
     <div className="p-6 ml-20">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">Gestión de Entrenadores</h1>
           <p className="text-gray-600 dark:text-gray-400">
-            {entrenadores.length} entrenadores registrados • {entrenadores.filter(e => e.activo).length} activos
+            {entrenadoresTotales} entrenadores registrados • {entrenadoresActivos} activos • {entrenadoresInactivos} inactivos
           </p>
         </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center space-x-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
-        >
-          <Plus size={20} />
-          <span>Nuevo Entrenador</span>
-        </button>
+        <div className="flex items-center space-x-3">
+          {/* Toggle para ver activos/inactivos */}
+          <button
+            onClick={() => setShowInactivos(!showInactivos)}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+              showInactivos
+                ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+            }`}
+          >
+            {showInactivos ? <EyeOff size={16} /> : <Eye size={16} />}
+            <span>{showInactivos ? `Ver Activos (${entrenadoresActivos})` : `Ver Inactivos (${entrenadoresInactivos})`}</span>
+          </button>
+          
+          <button
+            onClick={() => setShowForm(true)}
+            className="flex items-center space-x-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            <Plus size={20} />
+            <span>Nuevo Entrenador</span>
+          </button>
+        </div>
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-6">
+        {/* Header de la sección actual */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center space-x-3">
+            {showInactivos ? (
+              <UserX className="text-red-600 dark:text-red-400" size={24} />
+            ) : (
+              <UserCheck className="text-green-600 dark:text-green-400" size={24} />
+            )}
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              Entrenadores {showInactivos ? 'Inactivos' : 'Activos'}
+            </h2>
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+              showInactivos
+                ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+            }`}>
+              {showInactivos ? entrenadoresInactivos : entrenadoresActivos}
+            </span>
+          </div>
+        </div>
+
         <div className="relative mb-6">
           <Search
             className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500"
@@ -145,7 +211,7 @@ export function EntrenadoresPage() {
           />
           <input
             type="text"
-            placeholder="Buscar entrenadores..."
+            placeholder={`Buscar entrenadores ${showInactivos ? 'inactivos' : 'activos'}...`}
             className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -284,20 +350,41 @@ export function EntrenadoresPage() {
         <div className="overflow-x-auto">
           {filteredEntrenadores.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredEntrenadores.map((entrenador) => {
+              {filteredEntrenadores.map((entrenador: Entrenador) => {
                 const stats = getEntrenadorStats(entrenador.id)
+                const tieneVinculaciones = nominas.some(n => n.entrenador_id === entrenador.id) || 
+                                         horasTrabajadas.some(h => h.entrenador_id === entrenador.id)
+                
                 return (
                   <div
                     key={entrenador.id}
-                    className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl p-6 hover:shadow-lg transition-all duration-200"
+                    className={`border border-gray-200 dark:border-gray-600 rounded-xl p-6 hover:shadow-lg transition-all duration-200 ${
+                      entrenador.activo 
+                        ? 'bg-white dark:bg-gray-700' 
+                        : 'bg-gray-50 dark:bg-gray-800 opacity-75'
+                    }`}
                   >
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
-                          <User className="text-indigo-600 dark:text-indigo-400" size={24} />
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                          entrenador.activo 
+                            ? 'bg-indigo-100 dark:bg-indigo-900' 
+                            : 'bg-gray-100 dark:bg-gray-700'
+                        }`}>
+                          <User className={`${
+                            entrenador.activo 
+                              ? 'text-indigo-600 dark:text-indigo-400' 
+                              : 'text-gray-500 dark:text-gray-400'
+                          }`} size={24} />
                         </div>
                         <div>
-                          <h3 className="font-semibold text-gray-800 dark:text-gray-100">{entrenador.nombre}</h3>
+                          <h3 className={`font-semibold ${
+                            entrenador.activo 
+                              ? 'text-gray-800 dark:text-gray-100' 
+                              : 'text-gray-600 dark:text-gray-300'
+                          }`}>
+                            {entrenador.nombre}
+                          </h3>
                           <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                             <Star className="w-4 h-4 text-yellow-400 mr-1" fill="currentColor" />
                             <span>{entrenador.especialidad || "Sin especialidad"}</span>
@@ -309,14 +396,19 @@ export function EntrenadoresPage() {
                           className={`px-2 py-1 text-xs rounded-full ${
                             entrenador.activo
                               ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400"
-                              : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300"
+                              : "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400"
                           }`}
                         >
                           {entrenador.activo ? "Activo" : "Inactivo"}
                         </span>
-                        {stats.nominasPendientes > 0 && (
-                          <span className="px-2 py-1 text-xs rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400">
+                        {stats.nominasPendientes > 0 && entrenador.activo && (
+                          <span className="px-2 py-1 text-xs rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400">
                             {stats.nominasPendientes} pago{stats.nominasPendientes > 1 ? 's' : ''} pendiente{stats.nominasPendientes > 1 ? 's' : ''}
+                          </span>
+                        )}
+                        {tieneVinculaciones && (
+                          <span className="px-2 py-1 text-xs rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400">
+                            Con datos
                           </span>
                         )}
                       </div>
@@ -337,7 +429,7 @@ export function EntrenadoresPage() {
                           <span>{formatCurrency(entrenador.tarifa_hora)}/hora</span>
                         </div>
                       )}
-                      {stats.totalHoras > 0 && (
+                      {stats.totalHoras > 0 && entrenador.activo && (
                         <div className="bg-gray-50 dark:bg-gray-600 p-3 rounded-lg text-xs space-y-1">
                           <div className="flex justify-between">
                             <span>Total pagado:</span>
@@ -373,13 +465,32 @@ export function EntrenadoresPage() {
                       >
                         <Edit2 size={18} />
                       </button>
+                      
+                      {/* Botón de habilitar/deshabilitar */}
                       <button
-                        onClick={() => handleDelete(entrenador.id)}
-                        className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                        title="Eliminar entrenador"
+                        onClick={() => handleToggleStatus(entrenador)}
+                        className={`p-2 rounded-lg transition-colors ${
+                          entrenador.activo
+                            ? 'text-gray-500 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30'
+                            : 'text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30'
+                        }`}
+                        title={entrenador.activo ? "Deshabilitar entrenador" : "Habilitar entrenador"}
                       >
-                        <Trash2 size={18} />
+                        {entrenador.activo ? <UserX size={18} /> : <UserCheck size={18} />}
                       </button>
+
+                      {/* Botón de eliminar (solo si no tiene vinculaciones) */}
+                      {!tieneVinculaciones && (
+                        <button
+                          onClick={() => handleDelete(entrenador)}
+                          className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                          title="Eliminar entrenador"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      )}
                     </div>
                   </div>
                 )
@@ -387,14 +498,18 @@ export function EntrenadoresPage() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <User className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">No hay entrenadores</h3>
+              {showInactivos ? <UserX className="mx-auto h-12 w-12 text-red-400 dark:text-red-500" /> : <User className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />}
+              <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">
+                No hay entrenadores {showInactivos ? 'inactivos' : 'activos'}
+              </h3>
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 {searchTerm
-                  ? "No se encontraron entrenadores que coincidan con la búsqueda."
-                  : "Comienza agregando un nuevo entrenador."}
+                  ? `No se encontraron entrenadores ${showInactivos ? 'inactivos' : 'activos'} que coincidan con la búsqueda.`
+                  : showInactivos 
+                    ? "Todos los entrenadores están activos."
+                    : "Comienza agregando un nuevo entrenador."}
               </p>
-              {!searchTerm && (
+              {!searchTerm && !showInactivos && (
                 <div className="mt-6">
                   <button
                     type="button"

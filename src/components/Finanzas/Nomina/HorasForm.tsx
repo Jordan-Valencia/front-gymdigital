@@ -21,7 +21,8 @@ export function HorasForm({ horas, onClose }: HorasFormProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
     entrenador_id: horas?.entrenador_id || "",
-    fecha: horas?.fecha ? new Date(horas.fecha).toISOString().split('T')[0] : new Date().toISOString().split('T'),
+    fecha: horas?.fecha ? new Date(horas.fecha).toISOString().split('T') : new Date().toISOString().split('T')[0],
+
     horas: horas?.horas || 0,
   });
 

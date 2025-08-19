@@ -7,6 +7,7 @@ export interface Usuario {
   documento: string
   fecha_registro: string
   activo: boolean
+  fecha_nacimiento: string
   notas?: string
 }
 

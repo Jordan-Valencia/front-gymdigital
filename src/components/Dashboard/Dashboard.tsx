@@ -10,6 +10,8 @@ import {
   TrendingDown,
   CreditCard,
   Receipt,
+  Gift,
+  Cake,
 } from "lucide-react";
 import { StatsCard } from "./StatsCard";
 import { useGymData } from "../../hooks/useGymData";
@@ -80,6 +82,60 @@ export function Dashboard() {
       console.error("Error cargando estadísticas financieras:", error);
     }
   };
+
+  // Funciones para manejar cumpleaños
+  const esCumpleanosHoy = (fechaNacimiento: string) => {
+    const hoy = new Date();
+    const nacimiento = new Date(fechaNacimiento);
+    return (
+      hoy.getDate() === nacimiento.getDate() &&
+      hoy.getMonth() === nacimiento.getMonth()
+    );
+  };
+
+  const diasHastaCumpleanos = (fechaNacimiento: string) => {
+    const hoy = new Date();
+    const nacimiento = new Date(fechaNacimiento);
+    
+    // Establecer el cumpleaños de este año
+    const cumpleanosEsteAno = new Date(hoy.getFullYear(), nacimiento.getMonth(), nacimiento.getDate());
+    
+    // Si ya pasó este año, calcular para el próximo año
+    if (cumpleanosEsteAno < hoy) {
+      cumpleanosEsteAno.setFullYear(hoy.getFullYear() + 1);
+    }
+    
+    const diffTime = cumpleanosEsteAno.getTime() - hoy.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  };
+
+  const calcularEdad = (fechaNacimiento: string) => {
+    const hoy = new Date();
+    const nacimiento = new Date(fechaNacimiento);
+    let edad = hoy.getFullYear() - nacimiento.getFullYear();
+    const mes = hoy.getMonth() - nacimiento.getMonth();
+    
+    if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+      edad--;
+    }
+    
+    return edad;
+  };
+
+  // Filtrar usuarios con cumpleaños
+  const usuariosConFechaNacimiento = usuarios.filter(u => u.fecha_nacimiento && u.activo);
+  
+  const cumpleanosHoy = usuariosConFechaNacimiento.filter(u => 
+    esCumpleanosHoy(u.fecha_nacimiento!)
+  );
+
+  const cumpleanosProximos = usuariosConFechaNacimiento
+    .filter(u => {
+      const dias = diasHastaCumpleanos(u.fecha_nacimiento!);
+      return dias > 0 && dias <= 7;
+    })
+    .sort((a, b) => diasHastaCumpleanos(a.fecha_nacimiento!) - diasHastaCumpleanos(b.fecha_nacimiento!))
+    .slice(0, 5);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-CO", {
@@ -233,6 +289,45 @@ export function Dashboard() {
             </div>
           </div>
 
+          {/* Cumpleaños del día */}
+          {cumpleanosHoy.length > 0 && (
+            <div className="backdrop-blur-xl bg-gradient-to-r from-pink-50/90 to-purple-50/90 dark:from-pink-900/50 dark:to-purple-900/50 border-l-4 border-pink-400 dark:border-pink-600 rounded-xl p-6 shadow-lg animate-bounce-slow hover:shadow-xl transition-all duration-300">
+              <div className="flex items-center space-x-3 mb-4">
+                <Cake className="text-pink-600 dark:text-pink-400 animate-pulse" size={24} />
+                <h3 className="font-bold text-pink-800 dark:text-pink-200 text-lg">
+                  🎉 ¡Cumpleaños de Hoy! 🎂
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {cumpleanosHoy.map((usuario) => {
+                  const edad = calcularEdad(usuario.fecha_nacimiento!);
+                  return (
+                    <div
+                      key={usuario.id}
+                      className="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg border border-pink-200/50 dark:border-pink-700/50 hover:scale-105 transition-transform"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center">
+                          <span className="text-white text-sm font-bold">
+                            {usuario.nombre.split(" ").map(n => n[0]).join("").toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-pink-800 dark:text-pink-200">
+                            {usuario.nombre}
+                          </p>
+                          <p className="text-sm text-pink-600 dark:text-pink-300">
+                            Cumple {edad + 1} años 🎈
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Alertas importantes - Financieras y Operativas */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Alertas Financieras */}
@@ -308,7 +403,7 @@ export function Dashboard() {
           </div>
 
           {/* Sección de información adicional */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Próximos Eventos */}
             <div className="backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 rounded-xl p-5 shadow-lg border border-sky-100/50 dark:border-sky-900/50 hover:border-sky-200 dark:hover:border-sky-700 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group animate-fadeIn">
               <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
@@ -415,8 +510,60 @@ export function Dashboard() {
               </div>
             </div>
 
+            {/* Cumpleaños Próximos */}
+            <div className="backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 rounded-xl p-5 shadow-lg border border-pink-100/50 dark:border-pink-900/50 hover:border-pink-200 dark:hover:border-pink-700 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group animate-fadeIn delay-200">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                <Gift
+                  className="text-pink-600 dark:text-pink-400 group-hover:bounce transition-transform"
+                  size={18}
+                />
+                <span className="text-pink-600 dark:text-pink-400">Próximos Cumpleaños</span>
+              </h3>
+              <div className="space-y-2">
+                {cumpleanosProximos.length > 0 ? (
+                  cumpleanosProximos.map((usuario) => {
+                    const dias = diasHastaCumpleanos(usuario.fecha_nacimiento!);
+                    const edad = calcularEdad(usuario.fecha_nacimiento!);
+                    return (
+                      <div
+                        key={usuario.id}
+                        className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-pink-50 dark:hover:bg-pink-900/20 transition-colors"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-purple-600 rounded-lg flex items-center justify-center">
+                            <span className="text-white text-xs font-medium">
+                              {usuario.nombre
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")
+                                .toUpperCase()}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm text-gray-900 dark:text-gray-200">
+                              {usuario.nombre}
+                            </p>
+                            <p className="text-xs text-pink-600 dark:text-pink-400">
+                              Cumple {edad + 1} años
+                            </p>
+                          </div>
+                        </div>
+                        <span className="px-2 py-0.5 text-xs rounded-full bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300 font-medium">
+                          {dias === 1 ? "Mañana" : `${dias} días`}
+                        </span>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400 text-center py-3 text-sm">
+                    No hay cumpleaños próximos
+                  </p>
+                )}
+              </div>
+            </div>
+
             {/* Panel de Estado Financiero Rápido */}
-            <div className="backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 rounded-xl p-5 shadow-lg border border-purple-100/50 dark:border-purple-900/50 hover:border-purple-200 dark:hover:border-purple-700 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group animate-fadeIn delay-200">
+            <div className="backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 rounded-xl p-5 shadow-lg border border-purple-100/50 dark:border-purple-900/50 hover:border-purple-200 dark:hover:border-purple-700 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group animate-fadeIn delay-300">
               <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                 <CreditCard
                   className="text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform"
