@@ -235,7 +235,7 @@ export function EntrenadoresPage() {
                     value={formData.tarifa_hora}
                     onChange={handleInputChange}
                     min="0"
-                    step="1000"
+                    step="1"
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                     placeholder="25000"
                   />
