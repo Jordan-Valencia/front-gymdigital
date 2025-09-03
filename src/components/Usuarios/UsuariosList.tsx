@@ -1,5 +1,5 @@
-import { useState } from "react"
-import { Plus, Search, Edit2, Phone, Mail, Calendar, Cake, Gift, User, UserCheck, UserX, Eye, EyeOff } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Plus, Search, Edit2, Phone, Mail, Calendar, Cake, Gift, User, UserCheck, UserX, Eye, EyeOff, Loader2 } from "lucide-react"
 import { useGymData } from "../../hooks/useGymData"
 import { useToast } from "../../contexts/ToastContext"
 import type { Usuario } from "../../types"
@@ -14,235 +14,284 @@ export function UsuariosList({ onAddUser, onEditUser }: UsuariosListProps) {
   const { showToast } = useToast()
   const [searchTerm, setSearchTerm] = useState("")
   const [showInactivos, setShowInactivos] = useState(false)
+  const [loadingUsers, setLoadingUsers] = useState<Set<string>>(new Set())
+  const [isLoading, setIsLoading] = useState(false)
 
   // Funciones para manejar cumpleaños
   const esCumpleanosHoy = (fechaNacimiento: string) => {
-    const hoy = new Date();
-    const nacimiento = new Date(fechaNacimiento);
+    if (!fechaNacimiento) return false
+    const hoy = new Date()
+    const nacimiento = new Date(fechaNacimiento)
     return (
       hoy.getDate() === nacimiento.getDate() &&
       hoy.getMonth() === nacimiento.getMonth()
-    );
-  };
+    )
+  }
 
   const diasHastaCumpleanos = (fechaNacimiento: string) => {
-    const hoy = new Date();
-    const nacimiento = new Date(fechaNacimiento);
+    if (!fechaNacimiento) return Infinity
+    const hoy = new Date()
+    const nacimiento = new Date(fechaNacimiento)
     
-    const cumpleanosEsteAno = new Date(hoy.getFullYear(), nacimiento.getMonth(), nacimiento.getDate());
+    const cumpleanosEsteAno = new Date(hoy.getFullYear(), nacimiento.getMonth(), nacimiento.getDate())
     
     if (cumpleanosEsteAno < hoy) {
-      cumpleanosEsteAno.setFullYear(hoy.getFullYear() + 1);
+      cumpleanosEsteAno.setFullYear(hoy.getFullYear() + 1)
     }
     
-    const diffTime = cumpleanosEsteAno.getTime() - hoy.getTime();
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  };
+    const diffTime = cumpleanosEsteAno.getTime() - hoy.getTime()
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  }
 
   const calcularEdad = (fechaNacimiento: string) => {
-    const hoy = new Date();
-    const nacimiento = new Date(fechaNacimiento);
-    let edad = hoy.getFullYear() - nacimiento.getFullYear();
-    const mes = hoy.getMonth() - nacimiento.getMonth();
+    if (!fechaNacimiento) return null
+    const hoy = new Date()
+    const nacimiento = new Date(fechaNacimiento)
+    let edad = hoy.getFullYear() - nacimiento.getFullYear()
+    const mes = hoy.getMonth() - nacimiento.getMonth()
     
     if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
-      edad--;
+      edad--
     }
     
-    return edad;
-  };
+    return edad >= 0 ? edad : null
+  }
 
   const formatearFecha = (fecha: string) => {
-    return new Date(fecha).toLocaleDateString("es-ES", {
-      day: "numeric",
-      month: "long"
-    });
-  };
+    if (!fecha) return ""
+    try {
+      return new Date(fecha).toLocaleDateString("es-ES", {
+        day: "numeric",
+        month: "long"
+      })
+    } catch {
+      return ""
+    }
+  }
 
   // Separar usuarios activos e inactivos
-  const usuariosActivos = usuarios.filter(u => u.activo);
-  const usuariosInactivos = usuarios.filter(u => !u.activo);
+  const usuariosActivos = usuarios.filter(u => u.activo)
+  const usuariosInactivos = usuarios.filter(u => !u.activo)
 
   // Usuarios a mostrar según el toggle
-  const usuariosParaMostrar = showInactivos ? usuariosInactivos : usuariosActivos;
+  const usuariosParaMostrar = showInactivos ? usuariosInactivos : usuariosActivos
 
-  // Filtrar usuarios según búsqueda
-  const usuariosFiltrados = usuariosParaMostrar.filter(
-    (usuario) =>
-      usuario.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      usuario.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      usuario.telefono.includes(searchTerm) ||
-      usuario.documento.includes(searchTerm)
-  )
+  // Filtrar usuarios según búsqueda con validación mejorada
+  const usuariosFiltrados = usuariosParaMostrar.filter((usuario) => {
+    const searchLower = searchTerm.toLowerCase().trim()
+    if (!searchLower) return true
+
+    return (
+      usuario.nombre.toLowerCase().includes(searchLower) ||
+      usuario.email.toLowerCase().includes(searchLower) ||
+      usuario.telefono.replace(/\s/g, '').includes(searchTerm.replace(/\s/g, '')) ||
+      usuario.documento.includes(searchTerm.trim())
+    )
+  })
 
   // Solo mostrar cumpleaños para usuarios activos
-  const usuariosConFechaNacimiento = showInactivos ? [] : usuariosFiltrados.filter(u => u.fecha_nacimiento);
+  const usuariosConFechaNacimiento = showInactivos 
+    ? [] 
+    : usuariosFiltrados.filter(u => u.fecha_nacimiento)
   
   const cumpleanosHoy = usuariosConFechaNacimiento.filter(u => 
     esCumpleanosHoy(u.fecha_nacimiento!)
-  );
+  )
 
   const cumpleanosProximos = usuariosConFechaNacimiento
     .filter(u => {
-      const dias = diasHastaCumpleanos(u.fecha_nacimiento!);
-      return dias > 0 && dias <= 7;
+      const dias = diasHastaCumpleanos(u.fecha_nacimiento!)
+      return dias > 0 && dias <= 7
     })
-    .sort((a, b) => diasHastaCumpleanos(a.fecha_nacimiento!) - diasHastaCumpleanos(b.fecha_nacimiento!));
+    .sort((a, b) => diasHastaCumpleanos(a.fecha_nacimiento!) - diasHastaCumpleanos(b.fecha_nacimiento!))
 
   const usuariosRestantes = usuariosFiltrados.filter(u => 
     !cumpleanosHoy.some(c => c.id === u.id) && 
     !cumpleanosProximos.some(c => c.id === u.id)
-  );
+  )
 
   const handleToggleStatus = async (usuario: Usuario) => {
-    const nuevoEstado = !usuario.activo;
-    const accion = nuevoEstado ? "habilitar" : "deshabilitar";
+    const nuevoEstado = !usuario.activo
+    const accion = nuevoEstado ? "habilitar" : "deshabilitar"
     
     if (window.confirm(`¿Estás seguro de que deseas ${accion} a ${usuario.nombre}?`)) {
+      setLoadingUsers(prev => new Set(prev).add(usuario.id))
+      
       try {
-        await actualizarUsuario(usuario.id, { ...usuario, activo: nuevoEstado });
-        showToast(`Usuario ${accion}do correctamente`, "success");
-      } catch (error) {
-        showToast(`Error al ${accion} el usuario`, "error");
+        await actualizarUsuario(usuario.id, { ...usuario, activo: nuevoEstado })
+        showToast(`Usuario ${accion}do correctamente`, "success")
+      } catch (error: any) {
+        console.error('Error al cambiar estado del usuario:', error)
+        if (error?.response?.data?.message) {
+          showToast(error.response.data.message, "error")
+        } else {
+          showToast(`Error al ${accion} el usuario`, "error")
+        }
+      } finally {
+        setLoadingUsers(prev => {
+          const newSet = new Set(prev)
+          newSet.delete(usuario.id)
+          return newSet
+        })
       }
     }
-  };
+  }
 
-  const renderUserCard = (usuario: Usuario, showBirthdayBadge: boolean = false) => (
-    <div
-      key={usuario.id}
-      className={`group rounded-lg p-4 border transition-all duration-200 hover:shadow-md ${
-        showBirthdayBadge 
-          ? 'bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 border-pink-200 dark:border-pink-700'
-          : usuario.activo
-            ? 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-500'
-            : 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-600 opacity-75'
-      }`}
-    >
-      <div className="relative">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center group-hover:scale-105 transition-all duration-200 ${
-              showBirthdayBadge 
-                ? 'bg-gradient-to-br from-pink-500 to-purple-600'
-                : usuario.activo
-                  ? 'bg-gradient-to-br from-blue-500 to-indigo-600'
-                  : 'bg-gradient-to-br from-gray-400 to-gray-500'
-            }`}>
-              <span className="text-white text-sm font-medium">
-                {usuario.nombre
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .toUpperCase()}
+  const handleEditUser = (usuario: Usuario) => {
+    if (loadingUsers.has(usuario.id)) return
+    onEditUser(usuario)
+  }
+
+  const renderUserCard = (usuario: Usuario, showBirthdayBadge: boolean = false) => {
+    const isUserLoading = loadingUsers.has(usuario.id)
+    const edad = usuario.fecha_nacimiento ? calcularEdad(usuario.fecha_nacimiento) : null
+
+    return (
+      <div
+        key={usuario.id}
+        className={`group rounded-lg p-4 border transition-all duration-200 hover:shadow-md ${
+          showBirthdayBadge 
+            ? 'bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 border-pink-200 dark:border-pink-700'
+            : usuario.activo
+              ? 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-500'
+              : 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-600 opacity-75'
+        } ${isUserLoading ? 'pointer-events-none' : ''}`}
+      >
+        <div className="relative">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center group-hover:scale-105 transition-all duration-200 ${
+                showBirthdayBadge 
+                  ? 'bg-gradient-to-br from-pink-500 to-purple-600'
+                  : usuario.activo
+                    ? 'bg-gradient-to-br from-blue-500 to-indigo-600'
+                    : 'bg-gradient-to-br from-gray-400 to-gray-500'
+              }`}>
+                <span className="text-white text-sm font-medium">
+                  {usuario.nombre
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase()
+                    .slice(0, 2)}
+                </span>
+              </div>
+              <div>
+                <h3 className={`text-sm font-medium leading-tight ${
+                  usuario.activo 
+                    ? 'text-gray-900 dark:text-gray-100'
+                    : 'text-gray-600 dark:text-gray-300'
+                }`}>
+                  {usuario.nombre}
+                </h3>
+                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                  <span
+                    className={`inline-flex items-center px-2 py-0.5 text-xs rounded-full ${
+                      usuario.activo 
+                        ? "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300" 
+                        : "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300"
+                    }`}
+                  >
+                    {usuario.activo ? "Activo" : "Inactivo"}
+                  </span>
+                  {showBirthdayBadge && cumpleanosHoy.some(c => c.id === usuario.id) && (
+                    <span className="inline-flex items-center px-2 py-0.5 text-xs rounded-full bg-pink-100 text-pink-700 dark:bg-pink-900/50 dark:text-pink-300 font-medium">
+                      🎉 ¡Cumpleaños!
+                    </span>
+                  )}
+                  {showBirthdayBadge && cumpleanosProximos.some(c => c.id === usuario.id) && (
+                    <span className="inline-flex items-center px-2 py-0.5 text-xs rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300 font-medium">
+                      🎂 Próximo
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-0.5">
+              <button
+                onClick={() => handleEditUser(usuario)}
+                disabled={isUserLoading}
+                className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-gray-700 dark:hover:text-blue-400 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Editar usuario"
+              >
+                <Edit2 size={16} />
+              </button>
+              <button
+                onClick={() => handleToggleStatus(usuario)}
+                disabled={isUserLoading}
+                className={`p-1.5 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                  usuario.activo
+                    ? 'text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-gray-700 dark:hover:text-red-400'
+                    : 'text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-gray-700 dark:hover:text-green-400'
+                }`}
+                title={usuario.activo ? "Deshabilitar usuario" : "Habilitar usuario"}
+              >
+                {isUserLoading ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : usuario.activo ? (
+                  <UserX size={16} />
+                ) : (
+                  <UserCheck size={16} />
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 py-1.5 text-sm">
+              <Phone size={16} className="text-blue-500 flex-shrink-0" />
+              <span className={usuario.activo ? "text-gray-600 dark:text-gray-400" : "text-gray-500 dark:text-gray-500"}>
+                {usuario.telefono}
               </span>
             </div>
-            <div>
-              <h3 className={`text-sm font-medium leading-tight ${
-                usuario.activo 
-                  ? 'text-gray-900 dark:text-gray-100'
-                  : 'text-gray-600 dark:text-gray-300'
-              }`}>
-                {usuario.nombre}
-              </h3>
-              <div className="flex items-center gap-2 mt-1">
-                <span
-                  className={`inline-flex items-center px-2 py-0.5 text-xs rounded-full ${
-                    usuario.activo 
-                      ? "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300" 
-                      : "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300"
-                  }`}
-                >
-                  {usuario.activo ? "Activo" : "Inactivo"}
-                </span>
-                {showBirthdayBadge && cumpleanosHoy.some(c => c.id === usuario.id) && (
-                  <span className="inline-flex items-center px-2 py-0.5 text-xs rounded-full bg-pink-100 text-pink-700 dark:bg-pink-900/50 dark:text-pink-300 font-medium">
-                    🎉 ¡Cumpleaños!
-                  </span>
-                )}
-                {showBirthdayBadge && cumpleanosProximos.some(c => c.id === usuario.id) && (
-                  <span className="inline-flex items-center px-2 py-0.5 text-xs rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300 font-medium">
-                    🎂 Próximo
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-          <div className="flex gap-0.5">
-            <button
-              onClick={() => onEditUser(usuario)}
-              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-gray-700 dark:hover:text-blue-400 rounded-md transition-colors"
-              title="Editar usuario"
-            >
-              <Edit2 size={16} />
-            </button>
-            <button
-              onClick={() => handleToggleStatus(usuario)}
-              className={`p-1.5 rounded-md transition-colors ${
-                usuario.activo
-                  ? 'text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-gray-700 dark:hover:text-red-400'
-                  : 'text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-gray-700 dark:hover:text-green-400'
-              }`}
-              title={usuario.activo ? "Deshabilitar usuario" : "Habilitar usuario"}
-            >
-              {usuario.activo ? <UserX size={16} /> : <UserCheck size={16} />}
-            </button>
-          </div>
-        </div>
 
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 py-1.5 text-sm">
-            <Phone size={16} className="text-blue-500" />
-            <span className={usuario.activo ? "text-gray-600 dark:text-gray-400" : "text-gray-500 dark:text-gray-500"}>
-              {usuario.telefono}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2 py-1.5 text-sm">
-            <Mail size={16} className="text-blue-500" />
-            <span className={`truncate ${usuario.activo ? "text-gray-600 dark:text-gray-400" : "text-gray-500 dark:text-gray-500"}`}>
-              {usuario.email}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2 py-1.5 text-sm">
-            <User size={16} className="text-blue-500" />
-            <span className={usuario.activo ? "text-gray-600 dark:text-gray-400" : "text-gray-500 dark:text-gray-500"}>
-              {usuario.documento}
-            </span>
-          </div>
-
-          {usuario.fecha_nacimiento && (
             <div className="flex items-center gap-2 py-1.5 text-sm">
-              <Calendar size={16} className="text-purple-500" />
-              <div className="flex flex-col">
-                <span className={usuario.activo ? "text-gray-600 dark:text-gray-400" : "text-gray-500 dark:text-gray-500"}>
-                  {formatearFecha(usuario.fecha_nacimiento)} ({calcularEdad(usuario.fecha_nacimiento)} años)
-                </span>
-                {usuario.activo && cumpleanosProximos.some(c => c.id === usuario.id) && (
-                  <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">
-                    Cumple en {diasHastaCumpleanos(usuario.fecha_nacimiento)} día{diasHastaCumpleanos(usuario.fecha_nacimiento) !== 1 ? 's' : ''}
+              <Mail size={16} className="text-blue-500 flex-shrink-0" />
+              <span className={`truncate ${usuario.activo ? "text-gray-600 dark:text-gray-400" : "text-gray-500 dark:text-gray-500"}`}>
+                {usuario.email}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 py-1.5 text-sm">
+              <User size={16} className="text-blue-500 flex-shrink-0" />
+              <span className={usuario.activo ? "text-gray-600 dark:text-gray-400" : "text-gray-500 dark:text-gray-500"}>
+                {usuario.documento}
+              </span>
+            </div>
+
+            {usuario.fecha_nacimiento && (
+              <div className="flex items-center gap-2 py-1.5 text-sm">
+                <Calendar size={16} className="text-purple-500 flex-shrink-0" />
+                <div className="flex flex-col">
+                  <span className={usuario.activo ? "text-gray-600 dark:text-gray-400" : "text-gray-500 dark:text-gray-500"}>
+                    {formatearFecha(usuario.fecha_nacimiento)} 
+                    {edad !== null && ` (${edad} años)`}
                   </span>
-                )}
+                  {usuario.activo && cumpleanosProximos.some(c => c.id === usuario.id) && (
+                    <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">
+                      Cumple en {diasHastaCumpleanos(usuario.fecha_nacimiento)} día{diasHastaCumpleanos(usuario.fecha_nacimiento) !== 1 ? 's' : ''}
+                    </span>
+                  )}
+                </div>
               </div>
+            )}
+          </div>
+
+          {usuario.notas && (
+            <div className="mt-3 p-2 rounded-lg bg-gray-50 dark:bg-gray-700/50 text-xs text-gray-600 dark:text-gray-400">
+              {usuario.notas}
             </div>
           )}
-        </div>
 
-        {usuario.notas && (
-          <div className="mt-3 p-2 rounded-lg bg-gray-50 dark:bg-gray-700/50 text-xs text-gray-600 dark:text-gray-400">
-            {usuario.notas}
+          <div className="mt-3 pt-3 border-t dark:border-gray-700">
+            <p className="text-xs text-gray-500 dark:text-gray-500">
+              Registrado: {new Date(usuario.fecha_registro).toLocaleDateString("es-ES")}
+            </p>
           </div>
-        )}
-
-        <div className="mt-3 pt-3 border-t dark:border-gray-700">
-          <p className="text-xs text-gray-500 dark:text-gray-500">
-            Registrado: {new Date(usuario.fecha_registro).toLocaleDateString("es-ES")}
-          </p>
         </div>
       </div>
-    </div>
-  );
+    )
+  }
 
   return (
     <div className="space-y-6 p-4 ml-20">
@@ -367,6 +416,7 @@ export function UsuariosList({ onAddUser, onEditUser }: UsuariosListProps) {
         </div>
       </div>
 
+      {/* Estado vacío mejorado */}
       {usuariosFiltrados.length === 0 && (
         <div className="text-center py-12">
           <div className={`w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4 ${
@@ -381,23 +431,27 @@ export function UsuariosList({ onAddUser, onEditUser }: UsuariosListProps) {
             )}
           </div>
           <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-            No se encontraron miembros {showInactivos ? 'inactivos' : 'activos'}
+            {searchTerm 
+              ? `No se encontraron miembros ${showInactivos ? 'inactivos' : 'activos'} que coincidan con "${searchTerm}"`
+              : `No hay miembros ${showInactivos ? 'inactivos' : 'activos'} registrados`
+            }
           </h3>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
             {searchTerm
-              ? `No hay miembros ${showInactivos ? 'inactivos' : 'activos'} que coincidan con la búsqueda.`
+              ? `Intenta con otros términos de búsqueda o revisa la ortografía.`
               : showInactivos 
                 ? "Todos los miembros están activos."
-                : "Comienza agregando el primer miembro"}
+                : "Comienza agregando el primer miembro al sistema"
+            }
           </p>
           {!searchTerm && !showInactivos && (
             <div className="mt-6">
               <button
                 onClick={onAddUser}
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
               >
                 <Plus className="-ml-1 mr-2 h-5 w-5" />
-                Agregar Miembro
+                Agregar Primer Miembro
               </button>
             </div>
           )}

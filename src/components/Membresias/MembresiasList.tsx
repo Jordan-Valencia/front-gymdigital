@@ -43,7 +43,7 @@ export function MembresiasList({ refreshKey }: MembresiaListProps) {
       }
       setIsFormOpen(false)
     } catch (error) {
-      showToast("Error al guardar la membresía", "error")
+      console.log(error)
     }
   }
 
